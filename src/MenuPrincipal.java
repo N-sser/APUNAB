@@ -178,19 +178,19 @@ public class MenuPrincipal extends JFrame {
         sidebar.add(Box.createVerticalStrut(12));
 
         // ── Ítems de navegación ──
-        String[][] items = {
-                { "🏠", "Inicio" },
-                { "🎯", "Mis APUNAB" },
-                { "📊", "Estadísticas" },
-                { "📍", "Lugares" },
-                { "👤", "Mi Perfil" },
-                { "⚙", "Configuración" },
+        String[] items = {
+                "Inicio",
+                "Mis APUNAB",
+                "Estadísticas",
+                "Lugares",
+                "Mi Perfil",
+                "Configuración"
         };
 
         // El primer ítem arranca activo
         for (int i = 0; i < items.length; i++) {
             final boolean activo = (i == 0);
-            sidebar.add(navItem(items[i][0], items[i][1], activo));
+            sidebar.add(navItem(items[i], activo));
         }
 
         sidebar.add(Box.createVerticalGlue());
@@ -204,7 +204,7 @@ public class MenuPrincipal extends JFrame {
         return sidebar;
     }
 
-    JPanel navItem(String icono, String texto, boolean activo) {
+    JPanel navItem(String texto, boolean activo) {
         JPanel item = new JPanel(new FlowLayout(FlowLayout.LEFT, 18, 0)) {
             boolean hover = false;
             {
@@ -242,8 +242,8 @@ public class MenuPrincipal extends JFrame {
         };
         item.setOpaque(false);
 
-        JLabel lbl = new JLabel(icono + "  " + texto);
-        lbl.setFont(new Font("Segoe UI Emoji", activo ? Font.BOLD : Font.PLAIN, 13));
+        JLabel lbl = new JLabel(texto);
+        lbl.setFont(new Font("Segoe UI", activo ? Font.BOLD : Font.PLAIN, 13));
         lbl.setForeground(activo ? C_NARANJA : C_TEXTO);
         item.add(lbl);
         return item;
