@@ -2,15 +2,15 @@ package main.model;
 
 public class Student {
     private String code;
-    // private String email;
+    private String email;
     private String name;
     private String semester;
     private long apunabBalance;
     private String passwordHash;
 
-    public Student(String code, String name, String semester, long apunabBalance, String passwordHash) {
+    public Student(String code, String email, String name, String semester, long apunabBalance, String passwordHash) {
         this.code = code;
-        // this.email = email;
+        this.email = email;
         this.name = name;
         this.semester = semester;
         this.apunabBalance = apunabBalance;
@@ -22,8 +22,7 @@ public class Student {
     }
 
     public String getEmail() {
-        // TODO: change this to email
-        return code;
+        return email;
     }
 
     public String getName() {

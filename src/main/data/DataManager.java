@@ -100,11 +100,11 @@ public class DataManager {
         return hash.equals(student.getPasswordHash()) ? student : null;
     }
 
-    public boolean register(String code, String name, String rawPassword) {
+    public boolean register(String code, String email, String name, String rawPassword) {
         if (students.containsKey(code))
             return false;
         String hash = Security.hashPassword(code, rawPassword);
-        students.put(code, new Student(code, name, "1st Semester", 0L, hash));
+        students.put(code, new Student(code, email, name, "1st Semester", 0L, hash));
         saveAll();
         return true;
     }
@@ -291,7 +291,7 @@ public class DataManager {
     // PERSISTENCIA — GUARDAR
     // Formato: texto plano delimitado por pipe (|), un registro por linea.
     //
-    // students.txt: codigo|nombre|semestre|balance|hashContrasena
+    // students.txt: codigo|email|nombre|semestre|balance|hashContrasena
     // bets.txt: id|codigoEstudiante|idLugar|monto|fecha|resultado
     // places.txt: id|nombre|descripcion|inscritos (separados por coma)
     // ═══════════════════════════════════════════════════════════════════════════
@@ -307,6 +307,7 @@ public class DataManager {
             for (Student s : students.values()) {
                 w.write(String.join(D,
                         s.getCode(),
+                        s.getEmail(),
                         s.getName(),
                         s.getSemester(),
                         Long.toString(s.getApunabBalance()),
@@ -383,12 +384,13 @@ public class DataManager {
                     continue;
 
                 String code = parts[0];
-                String name = parts[1];
-                String semester = parts[2];
-                long balance = Long.parseLong(parts[3]);
-                String hash = parts[4];
+                String email = parts[1];
+                String name = parts[2];
+                String semester = parts[3];
+                long balance = Long.parseLong(parts[4]);
+                String hash = parts[5];
 
-                students.put(code, new Student(code, name, semester, balance, hash));
+                students.put(code, new Student(code, email, name, semester, balance, hash));
             }
         } catch (IOException e) {
             System.err.println("Error cargando estudiantes: " + e.getMessage());
@@ -463,7 +465,7 @@ public class DataManager {
     private void seedData() {
         String code = "U00123456";
         String hash = Security.hashPassword(code, "1234");
-        students.put(code, new Student(code, "Juan Perez Gomez", "1st Semester", 0L, hash));
+        students.put(code, new Student(code, "jperez123", "Juan Perez Gomez", "1st Semester", 0L, hash));
 
         Place p1 = new Place("P001", "Cafeteria L", "Cafeteria del bloque L");
         Place p2 = new Place("P002", "Cafeteria CSU", "Centro Social Universitario");
