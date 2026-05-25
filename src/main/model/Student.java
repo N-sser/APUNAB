@@ -2,6 +2,7 @@ package main.model;
 
 public class Student {
     private String code;
+    // private String email;
     private String name;
     private String semester;
     private long apunabBalance;
@@ -9,6 +10,7 @@ public class Student {
 
     public Student(String code, String name, String semester, long apunabBalance, String passwordHash) {
         this.code = code;
+        // this.email = email;
         this.name = name;
         this.semester = semester;
         this.apunabBalance = apunabBalance;
@@ -16,6 +18,11 @@ public class Student {
     }
 
     public String getCode() {
+        return code;
+    }
+
+    public String getEmail() {
+        // TODO: change this to email
         return code;
     }
 
