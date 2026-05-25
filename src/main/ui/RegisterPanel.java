@@ -20,11 +20,10 @@ public class RegisterPanel extends JFrame {
     private final JTextField fieldCode = new JTextField();
     private final JTextField fieldName = new JTextField();
     private final JTextField fieldEmail = new JTextField();
-    private final JTextField fieldSemester = new JTextField();
     private final JPasswordField fieldPass = new JPasswordField();
     private final JLabel lblError = new JLabel(" ");
 
-    private LoginPanel previousLoginPanel; // ✅ Declarada como atributo
+    private LoginPanel previousLoginPanel;
 
     public RegisterPanel(LoginPanel previousLoginPanel) {
         this.previousLoginPanel = previousLoginPanel;
@@ -51,7 +50,6 @@ public class RegisterPanel extends JFrame {
         setupField(fieldName, "Nombre completo", false);
         setupField(fieldEmail, "Email institucional", false);
         setupField(fieldCode, "Codigo de estudiante", false);
-        setupField(fieldSemester, "Semestre", false);
         setupField(fieldPass, "Contrasena", true);
         // Etiqueta de error
         lblError.setFont(new Font("Dialog", Font.PLAIN, 11));
@@ -83,10 +81,8 @@ public class RegisterPanel extends JFrame {
         root.add(Box.createVerticalStrut(6));
         root.add(fieldName);
         root.add(Box.createVerticalStrut(6));
-        root.add(fieldSemester);
-        root.add(Box.createVerticalStrut(6));
         root.add(fieldPass);
-        root.add(Box.createVerticalStrut(1));
+        root.add(Box.createVerticalStrut(12));
         root.add(lblError);
         root.add(Box.createVerticalStrut(8));
         root.add(btnRegister);
@@ -96,9 +92,9 @@ public class RegisterPanel extends JFrame {
 
     // ── Logica ────────────────────────────────────────────────────────────────
     void createUser() {
-        String code = fieldCode.getText().trim();
-        String email = fieldEmail.getText().trim();
-        String name = fieldName.getText().trim();
+        String code = getRealText(fieldCode, "Codigo de estudiante");
+        String email = getRealText(fieldEmail, "Email institucional");
+        String name = getRealText(fieldName, "Nombre completo");
         String raw = new String(fieldPass.getPassword()).trim();
 
         if (code.isEmpty() || email.isEmpty() || name.isEmpty() || raw.isEmpty()) {
@@ -110,10 +106,10 @@ public class RegisterPanel extends JFrame {
 
         if (validation) {
             confirmation(true);
+            dispose();
         } else {
             confirmation(false);
         }
-        dispose();
     }
 
     void showError(String msg) {
@@ -227,10 +223,16 @@ public class RegisterPanel extends JFrame {
         } else {
             JOptionPane.showMessageDialog(
                     this,
-                    "Contraseña ya registrada, intente con otra lol.",
+                    "Codigo ID ya registrada, intente con otra lol.",
                     "Status",
                     JOptionPane.PLAIN_MESSAGE);
         }
+    }
+
+    /** Devuelve el texto real del campo, o vacio si es placeholder. */
+    String getRealText(JTextField field, String placeholder) {
+        String text = field.getText().trim();
+        return text.equals(placeholder) ? "" : text;
     }
 
     @Override
