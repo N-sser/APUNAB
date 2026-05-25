@@ -212,8 +212,4 @@ public class LoginPanel extends JFrame {
         lbl.setMaximumSize(new Dimension(Integer.MAX_VALUE, 40));
         return lbl;
     }
-
-    public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> new LoginPanel().setVisible(true));
-    }
 }
