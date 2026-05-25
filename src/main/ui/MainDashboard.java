@@ -211,14 +211,13 @@ public class MainDashboard extends JFrame {
     JPanel buildCardHolder() {
         cardHolder.setBackground(C_BG);
 
-        // Cada panel recibe el estudiante para mostrar datos reales.
-        // Los placeholder se reemplazan con paneles reales conforme se construyan.
+        // Cada panel recibe el estudiante para mostrar datos reales
         cardHolder.add(buildHomePanel(), "home");
-        cardHolder.add(placeholder("Mis APUNAB"), "apunab");
-        cardHolder.add(placeholder("Estadisticas"), "statistics");
-        cardHolder.add(placeholder("Lugares"), "places");
-        cardHolder.add(placeholder("Perfil"), "profile");
-        cardHolder.add(placeholder("Configuracion"), "settings");
+        cardHolder.add(new BetsPanel(student), "apunab");
+        cardHolder.add(new StatsPanel(student), "statistics");
+        cardHolder.add(new PlacesPanel(student), "places");
+        cardHolder.add(new ProfilePanel(student), "profile");
+        cardHolder.add(new SettingsPanel(student), "settings");
 
         cardLayout.show(cardHolder, "home");
         return cardHolder;
@@ -281,10 +280,13 @@ public class MainDashboard extends JFrame {
         JPanel actions = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 0));
         actions.setOpaque(false);
         actions.setBorder(new EmptyBorder(18, 0, 0, 0));
-        actions.add(roundedButton("Ver Lugares", C_ORANGE_BG, C_ORANGE, F_PLAIN_SM));
-        actions.add(roundedButton("Historial de APUNAB", new Color(0xEE, 0xEE, 0xEE), C_TEXT, F_PLAIN_SM));
-        actions.add(roundedButton("Estadisticas", new Color(0xEE, 0xEE, 0xEE), C_TEXT, F_PLAIN_SM));
-        actions.add(roundedButton("Registrarse en Lugar", new Color(0xEE, 0xEE, 0xEE), C_TEXT, F_PLAIN_SM));
+        // actions.add(roundedButton("Ver Lugares", C_ORANGE_BG, C_ORANGE, F_PLAIN_SM));
+        // actions.add(roundedButton("Historial de APUNAB", new Color(0xEE, 0xEE, 0xEE),
+        // C_TEXT, F_PLAIN_SM));
+        // actions.add(roundedButton("Estadisticas", new Color(0xEE, 0xEE, 0xEE),
+        // C_TEXT, F_PLAIN_SM));
+        // actions.add(roundedButton("Registrarse en Lugar", new Color(0xEE, 0xEE,
+        // 0xEE), C_TEXT, F_PLAIN_SM));
 
         JPanel center = new JPanel(new BorderLayout());
         center.setOpaque(false);
