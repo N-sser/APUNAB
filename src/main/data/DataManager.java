@@ -6,6 +6,8 @@ import main.model.Place;
 import main.model.Student;
 import main.util.Security;
 
+import java.io.*;
+import java.nio.file.*;
 import java.time.LocalDate;
 import java.time.temporal.IsoFields;
 import java.util.*;
@@ -21,14 +23,69 @@ public class DataManager {
 
     public static final long GRADUATION_GOAL = 100_000L;
 
+    // Delimitador para archivos de datos (pipe para evitar conflictos con comas en
+    // texto)
+    private static final String D = "|";
+
+    // ═══════════════════════════════════════════════════════════════════════════
+    // INICIALIZACION
+    // Si existen archivos de datos, los carga. Si no, usa datos de prueba.
+    // ═══════════════════════════════════════════════════════════════════════════
+
     private DataManager() {
-        seedData();
+        if (dataFilesExist()) {
+            loadAll();
+        } else {
+            seedData();
+            saveAll();
+        }
     }
 
     public static DataManager getInstance() {
         if (instance == null)
             instance = new DataManager();
         return instance;
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════════
+    // RUTA DE DATOS
+    // Linux: ~/.local/share/apunab/
+    // Windows: %APPDATA%/APUNAB/
+    // ═══════════════════════════════════════════════════════════════════════════
+
+    private static Path getDataDir() {
+        String os = System.getProperty("os.name").toLowerCase();
+        Path dir;
+        if (os.contains("win")) {
+            String appdata = System.getenv("APPDATA");
+            dir = (appdata != null)
+                    ? Path.of(appdata, "APUNAB")
+                    : Path.of(System.getProperty("user.home"), "APUNAB");
+        } else {
+            dir = Path.of(System.getProperty("user.home"), ".local", "share", "apunab");
+        }
+        try {
+            Files.createDirectories(dir);
+        } catch (IOException e) {
+            System.err.println("No se pudo crear directorio de datos: " + dir);
+        }
+        return dir;
+    }
+
+    private static Path studentsFile() {
+        return getDataDir().resolve("students.txt");
+    }
+
+    private static Path betsFile() {
+        return getDataDir().resolve("bets.txt");
+    }
+
+    private static Path placesFile() {
+        return getDataDir().resolve("places.txt");
+    }
+
+    private boolean dataFilesExist() {
+        return Files.exists(studentsFile()) && Files.exists(betsFile()) && Files.exists(placesFile());
     }
 
     // ═══════════════════════════════════════════════════════════════════════════
@@ -48,6 +105,7 @@ public class DataManager {
             return false;
         String hash = Security.hashPassword(code, rawPassword);
         students.put(code, new Student(code, name, "1st Semester", 0L, hash));
+        saveAll();
         return true;
     }
 
@@ -56,12 +114,13 @@ public class DataManager {
     }
 
     // ═══════════════════════════════════════════════════════════════════════════
-    // BET CRUD
+    // APUESTAS CRUD
     // ═══════════════════════════════════════════════════════════════════════════
 
     public void addBet(Bet bet) {
         bets.add(bet);
         syncBalance(bet.getStudentCode());
+        saveAll();
     }
 
     public boolean updateBet(Bet updated) {
@@ -69,6 +128,7 @@ public class DataManager {
             if (bets.get(i).getId().equals(updated.getId())) {
                 bets.set(i, updated);
                 syncBalance(updated.getStudentCode());
+                saveAll();
                 return true;
             }
         }
@@ -83,6 +143,7 @@ public class DataManager {
             return false;
         bets.remove(target);
         syncBalance(target.getStudentCode());
+        saveAll();
         return true;
     }
 
@@ -99,7 +160,7 @@ public class DataManager {
     }
 
     // ═══════════════════════════════════════════════════════════════════════════
-    // APUNAB STATISTICS
+    // ESTADISTICAS APUNAB
     // ═══════════════════════════════════════════════════════════════════════════
 
     public long getBalance(String studentCode) {
@@ -112,6 +173,7 @@ public class DataManager {
         return GRADUATION_GOAL - getBalance(studentCode);
     }
 
+    /** Total de APUNAB en la semana calendario actual. */
     public long getWeeklyTotal(String studentCode) {
         int currentWeek = LocalDate.now().get(IsoFields.WEEK_OF_WEEK_BASED_YEAR);
         int currentYear = LocalDate.now().getYear();
@@ -122,6 +184,7 @@ public class DataManager {
                 .sum();
     }
 
+    /** Total de APUNAB en el mes calendario actual. */
     public long getMonthlyTotal(String studentCode) {
         LocalDate now = LocalDate.now();
         return getBetsByStudent(studentCode).stream()
@@ -132,9 +195,8 @@ public class DataManager {
     }
 
     /**
-     * Semester 1 = January-June, Semester 2 = July-December.
-     * Since students only do one semester this is effectively their full history,
-     * but the date filter keeps it correct if seed data spans multiple semesters.
+     * Total de APUNAB en el semestre actual.
+     * Semestre 1 = enero-junio, Semestre 2 = julio-diciembre.
      */
     public long getSemesterTotal(String studentCode) {
         LocalDate now = LocalDate.now();
@@ -152,7 +214,7 @@ public class DataManager {
     }
 
     // ═══════════════════════════════════════════════════════════════════════════
-    // PLACE CRUD
+    // LUGARES CRUD
     // ═══════════════════════════════════════════════════════════════════════════
 
     public List<Place> getPlaces() {
@@ -165,31 +227,42 @@ public class DataManager {
 
     public void addPlace(Place place) {
         places.put(place.getId(), place);
+        saveAll();
     }
 
     public boolean updatePlace(Place updated) {
         if (!places.containsKey(updated.getId()))
             return false;
         places.put(updated.getId(), updated);
+        saveAll();
         return true;
     }
 
     public boolean deletePlace(String placeId) {
-        return places.remove(placeId) != null;
+        if (places.remove(placeId) == null)
+            return false;
+        saveAll();
+        return true;
     }
 
     public boolean enrollInPlace(String studentCode, String placeId) {
         Place place = places.get(placeId);
         if (place == null)
             return false;
-        return place.enroll(studentCode);
+        boolean ok = place.enroll(studentCode);
+        if (ok)
+            saveAll();
+        return ok;
     }
 
     public boolean leavePlace(String studentCode, String placeId) {
         Place place = places.get(placeId);
         if (place == null)
             return false;
-        return place.leave(studentCode);
+        boolean ok = place.leave(studentCode);
+        if (ok)
+            saveAll();
+        return ok;
     }
 
     public List<Place> getEnrolledPlaces(String studentCode) {
@@ -199,41 +272,205 @@ public class DataManager {
     }
 
     // ═══════════════════════════════════════════════════════════════════════════
-    // INTERNAL
+    // INTERNO
     // ═══════════════════════════════════════════════════════════════════════════
 
-    /** Recomputes and stores balance from bets. Called after every mutation. */
+    /** Recalcula y guarda el balance del estudiante a partir de sus apuestas. */
     private void syncBalance(String studentCode) {
         Student student = students.get(studentCode);
         if (student != null)
             student.setApunabBalance(getBalance(studentCode));
     }
 
-    /** Generates a simple sequential ID: B001, B002, etc. */
+    /** Genera un ID secuencial simple: B001, B002, etc. */
     public String nextBetId() {
         return String.format("B%03d", bets.size() + 1);
     }
 
     // ═══════════════════════════════════════════════════════════════════════════
-    // SEED
-    // One student, five real UNAB places, realistic bets over one semester.
-    // Bets net to ~45,230 APUNAB total.
+    // PERSISTENCIA — GUARDAR
+    // Formato: texto plano delimitado por pipe (|), un registro por linea.
+    //
+    // students.txt: codigo|nombre|semestre|balance|hashContrasena
+    // bets.txt: id|codigoEstudiante|idLugar|monto|fecha|resultado
+    // places.txt: id|nombre|descripcion|inscritos (separados por coma)
+    // ═══════════════════════════════════════════════════════════════════════════
+
+    private void saveAll() {
+        saveStudents();
+        saveBets();
+        savePlaces();
+    }
+
+    private void saveStudents() {
+        try (BufferedWriter w = Files.newBufferedWriter(studentsFile())) {
+            for (Student s : students.values()) {
+                w.write(String.join(D,
+                        s.getCode(),
+                        s.getName(),
+                        s.getSemester(),
+                        Long.toString(s.getApunabBalance()),
+                        s.getPasswordHash()));
+                w.newLine();
+            }
+        } catch (IOException e) {
+            System.err.println("Error guardando estudiantes: " + e.getMessage());
+        }
+    }
+
+    private void saveBets() {
+        try (BufferedWriter w = Files.newBufferedWriter(betsFile())) {
+            for (Bet b : bets) {
+                w.write(String.join(D,
+                        b.getId(),
+                        b.getStudentCode(),
+                        b.getPlaceId(),
+                        Long.toString(b.getAmount()),
+                        b.getDate().toString(), // formato ISO: 2026-05-25
+                        b.getResult().name() // WON, LOST, PENDING
+                ));
+                w.newLine();
+            }
+        } catch (IOException e) {
+            System.err.println("Error guardando apuestas: " + e.getMessage());
+        }
+    }
+
+    private void savePlaces() {
+        try (BufferedWriter w = Files.newBufferedWriter(placesFile())) {
+            for (Place p : places.values()) {
+                // Lista de inscritos separada por coma, vacia si no hay nadie
+                String enrolled = String.join(",", p.getEnrolledStudentCodes());
+                w.write(String.join(D,
+                        p.getId(),
+                        p.getName(),
+                        p.getDescription(),
+                        enrolled));
+                w.newLine();
+            }
+        } catch (IOException e) {
+            System.err.println("Error guardando lugares: " + e.getMessage());
+        }
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════════
+    // PERSISTENCIA — CARGAR
+    // ═══════════════════════════════════════════════════════════════════════════
+
+    private void loadAll() {
+        students.clear();
+        bets.clear();
+        places.clear();
+
+        loadStudents();
+        loadBets();
+        loadPlaces();
+
+        // Sincronizar balances desde las apuestas cargadas
+        for (String code : students.keySet()) {
+            syncBalance(code);
+        }
+    }
+
+    private void loadStudents() {
+        try {
+            for (String line : Files.readAllLines(studentsFile())) {
+                line = line.trim();
+                if (line.isEmpty())
+                    continue;
+                String[] parts = line.split("\\|", -1);
+                if (parts.length < 5)
+                    continue;
+
+                String code = parts[0];
+                String name = parts[1];
+                String semester = parts[2];
+                long balance = Long.parseLong(parts[3]);
+                String hash = parts[4];
+
+                students.put(code, new Student(code, name, semester, balance, hash));
+            }
+        } catch (IOException e) {
+            System.err.println("Error cargando estudiantes: " + e.getMessage());
+        }
+    }
+
+    private void loadBets() {
+        try {
+            for (String line : Files.readAllLines(betsFile())) {
+                line = line.trim();
+                if (line.isEmpty())
+                    continue;
+                String[] parts = line.split("\\|", -1);
+                if (parts.length < 6)
+                    continue;
+
+                String id = parts[0];
+                String studentCode = parts[1];
+                String placeId = parts[2];
+                long amount = Long.parseLong(parts[3]);
+                LocalDate date = LocalDate.parse(parts[4]);
+                Result result = Result.valueOf(parts[5]);
+
+                bets.add(new Bet(id, studentCode, placeId, amount, date, result));
+            }
+        } catch (IOException e) {
+            System.err.println("Error cargando apuestas: " + e.getMessage());
+        }
+    }
+
+    private void loadPlaces() {
+        try {
+            for (String line : Files.readAllLines(placesFile())) {
+                line = line.trim();
+                if (line.isEmpty())
+                    continue;
+                String[] parts = line.split("\\|", -1);
+                if (parts.length < 4)
+                    continue;
+
+                String id = parts[0];
+                String name = parts[1];
+                String description = parts[2];
+                String enrolledRaw = parts[3];
+
+                Place place = new Place(id, name, description);
+
+                // Reconstituir lista de inscritos
+                if (!enrolledRaw.isEmpty()) {
+                    for (String code : enrolledRaw.split(",", -1)) {
+                        code = code.trim();
+                        if (!code.isEmpty())
+                            place.enroll(code);
+                    }
+                }
+
+                places.put(id, place);
+            }
+        } catch (IOException e) {
+            System.err.println("Error cargando lugares: " + e.getMessage());
+        }
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════════
+    // DATOS DE PRUEBA
+    // Solo se ejecuta en la primera ejecucion (cuando no existen archivos).
+    // Crea un estudiante demo, 5 lugares UNAB y 17 apuestas de ejemplo.
+    // ID del estudiante de prueba: "U00123456"
+    // Contrasena del estudiante de prueba: "1234"
     // ═══════════════════════════════════════════════════════════════════════════
 
     private void seedData() {
-        // Student — password is "1234"
         String code = "U00123456";
         String hash = Security.hashPassword(code, "1234");
         students.put(code, new Student(code, "Juan Perez Gomez", "1st Semester", 0L, hash));
 
-        // The five real UNAB places
         Place p1 = new Place("P001", "Cafeteria L", "Cafeteria del bloque L");
         Place p2 = new Place("P002", "Cafeteria CSU", "Centro Social Universitario");
         Place p3 = new Place("P003", "Cafeteria Bosque", "Cafeteria zona del Bosque");
         Place p4 = new Place("P004", "Cafeteria Casona", "Cafeteria La Casona");
         Place p5 = new Place("P005", "Banu", "Punto Banu campus principal");
 
-        // Juan is enrolled in three of them
         p1.enroll(code);
         p3.enroll(code);
         p5.enroll(code);
@@ -244,8 +481,7 @@ public class DataManager {
         places.put(p4.getId(), p4);
         places.put(p5.getId(), p5);
 
-        // Bets spread across the current semester
-        // Positive = won, negative = lost. Total nets to ~45,230.
+        // Apuestas distribuidas en el semestre actual
         LocalDate base = LocalDate.now().withDayOfMonth(1);
 
         addSeedBet("B001", code, "P001", 5_000L, base.minusMonths(4).withDayOfMonth(5), Result.WON);
@@ -269,7 +505,7 @@ public class DataManager {
         syncBalance(code);
     }
 
-    /** Adds a bet directly to the list without triggering syncBalance mid-seed. */
+    /** Agrega una apuesta directamente sin disparar syncBalance ni saveAll. */
     private void addSeedBet(String id, String studentCode, String placeId,
             long amount, LocalDate date, Result result) {
         bets.add(new Bet(id, studentCode, placeId, amount, date, result));
