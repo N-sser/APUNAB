@@ -63,7 +63,7 @@ public class Bet {
 
     @Override
     public String toString() {
-        return String.format("Bet[%s | student=%s | place=%s | amount=%d | %s | %s]",
+        return String.format("Apuesta[%s | estudiante=%s | lugar=%s | cantidad=%d | %s | %s]",
                 id, studentCode, placeId, amount, date, result);
     }
 }
