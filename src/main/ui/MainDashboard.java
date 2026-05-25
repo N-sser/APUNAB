@@ -1,5 +1,6 @@
 package main.ui;
 
+import main.data.DataManager;
 import main.model.Student;
 
 import javax.swing.*;
@@ -9,7 +10,7 @@ import java.awt.event.*;
 
 public class MainDashboard extends JFrame {
 
-    // ── Palette ───────────────────────────────────────────────────────────────
+    // ── Paleta de colores ─────────────────────────────────────────────────────
     static final Color C_ORANGE = new Color(0xFF, 0x8C, 0x00);
     static final Color C_ORANGE_BG = new Color(0xFF, 0x8C, 0x00, 30);
     static final Color C_BG = new Color(0xF5, 0xF5, 0xF5);
@@ -18,17 +19,18 @@ public class MainDashboard extends JFrame {
     static final Color C_MUTED = new Color(0x88, 0x88, 0x88);
     static final Color C_DIVIDER = new Color(0xEE, 0xEE, 0xEE);
 
-    // ── Fonts ─────────────────────────────────────────────────────────────────
+    // ── Fuentes ───────────────────────────────────────────────────────────────
     static final Font F_BOLD_LG = new Font("Dialog", Font.BOLD, 22);
     static final Font F_BOLD_MD = new Font("Dialog", Font.BOLD, 14);
     static final Font F_BOLD_SM = new Font("Dialog", Font.BOLD, 12);
     static final Font F_PLAIN_MD = new Font("Dialog", Font.PLAIN, 13);
     static final Font F_PLAIN_SM = new Font("Dialog", Font.PLAIN, 11);
 
-    // ── State ─────────────────────────────────────────────────────────────────
+    // ── Estado ────────────────────────────────────────────────────────────────
     private final Student student;
+    private final DataManager dm = DataManager.getInstance();
 
-    // CardLayout to swap content panels
+    // CardLayout para cambiar paneles de contenido
     private final CardLayout cardLayout = new CardLayout();
     private final JPanel cardHolder = new JPanel(cardLayout);
 
@@ -51,7 +53,7 @@ public class MainDashboard extends JFrame {
         setContentPane(root);
     }
 
-    // ── Top bar ───────────────────────────────────────────────────────────────
+    // ── Barra superior ────────────────────────────────────────────────────────
 
     JPanel buildTopBar() {
         JPanel bar = new JPanel(new BorderLayout()) {
@@ -86,7 +88,7 @@ public class MainDashboard extends JFrame {
         lblUser.setFont(F_PLAIN_SM);
         lblUser.setForeground(C_MUTED);
 
-        JButton btnLogout = roundedButton("Cerrar sesión ", C_ORANGE_BG, C_ORANGE, F_PLAIN_SM);
+        JButton btnLogout = roundedButton("Cerrar sesion", C_ORANGE_BG, C_ORANGE, F_PLAIN_SM);
         btnLogout.addActionListener(e -> logout());
 
         right.add(lblUser);
@@ -123,17 +125,17 @@ public class MainDashboard extends JFrame {
         sidebar.add(divider());
         sidebar.add(Box.createVerticalStrut(12));
 
-        // Nav items: label shown in sidebar → card name registered in CardLayout
+        // Elementos de navegacion: texto visible -> nombre de la tarjeta en CardLayout
         String[][] navItems = {
-                { "Home", "home" },
-                { "My APUNAB", "apunab" },
-                { "Statistics", "statistics" },
-                { "Places", "places" },
-                { "Profile", "profile" },
-                { "Settings", "settings" },
+                { "Inicio", "home" },
+                { "Mis APUNAB", "apunab" },
+                { "Estadisticas", "statistics" },
+                { "Lugares", "places" },
+                { "Perfil", "profile" },
+                { "Configuracion", "settings" },
         };
 
-        // Track active item to repaint on switch
+        // Controlar cual esta activo para repintar al cambiar
         JPanel[] navPanels = new JPanel[navItems.length];
         for (int i = 0; i < navItems.length; i++) {
             final String card = navItems[i][1];
@@ -204,32 +206,32 @@ public class MainDashboard extends JFrame {
         return item;
     }
 
-    // ── Card holder ───────────────────────────────────────────────────────────
+    // ── Contenedor de paneles (CardLayout) ────────────────────────────────────
 
     JPanel buildCardHolder() {
         cardHolder.setBackground(C_BG);
 
-        // Each panel gets the student passed in so they can display real data.
-        // Right now they're placeholders — swap them with real panels as you build.
+        // Cada panel recibe el estudiante para mostrar datos reales.
+        // Los placeholder se reemplazan con paneles reales conforme se construyan.
         cardHolder.add(buildHomePanel(), "home");
-        cardHolder.add(placeholder("My APUNAB"), "apunab");
-        cardHolder.add(placeholder("Statistics"), "statistics");
-        cardHolder.add(placeholder("Places"), "places");
-        cardHolder.add(placeholder("Profile"), "profile");
-        cardHolder.add(placeholder("Settings"), "settings");
+        cardHolder.add(placeholder("Mis APUNAB"), "apunab");
+        cardHolder.add(placeholder("Estadisticas"), "statistics");
+        cardHolder.add(placeholder("Lugares"), "places");
+        cardHolder.add(placeholder("Perfil"), "profile");
+        cardHolder.add(placeholder("Configuracion"), "settings");
 
         cardLayout.show(cardHolder, "home");
         return cardHolder;
     }
 
-    // ── Home panel (the actual dashboard content) ─────────────────────────────
+    // ── Panel de inicio (dashboard con datos reales de DataManager) ───────────
 
     JPanel buildHomePanel() {
         JPanel panel = new JPanel(new BorderLayout());
         panel.setBackground(C_BG);
         panel.setBorder(new EmptyBorder(28, 28, 28, 28));
 
-        // Header
+        // Encabezado
         JPanel header = new JPanel(new BorderLayout());
         header.setOpaque(false);
         header.setBorder(new EmptyBorder(0, 0, 20, 0));
@@ -238,11 +240,11 @@ public class MainDashboard extends JFrame {
         headerText.setLayout(new BoxLayout(headerText, BoxLayout.Y_AXIS));
         headerText.setOpaque(false);
 
-        JLabel lblHi = new JLabel("Welcome back, " + student.getName().split(" ")[0] + "!");
+        JLabel lblHi = new JLabel("Bienvenido, " + student.getName().split(" ")[0] + "!");
         lblHi.setFont(F_BOLD_LG);
         lblHi.setForeground(C_TEXT);
 
-        JLabel lblSub = new JLabel("Here is your APUNAB activity summary");
+        JLabel lblSub = new JLabel("Resumen de tu actividad APUNAB");
         lblSub.setFont(F_PLAIN_MD);
         lblSub.setForeground(C_MUTED);
 
@@ -250,35 +252,39 @@ public class MainDashboard extends JFrame {
         headerText.add(Box.createVerticalStrut(4));
         headerText.add(lblSub);
 
-        JButton btnRegister = roundedButton("+ Register APUNAB", C_ORANGE, Color.WHITE, F_BOLD_SM);
+        JButton btnRegister = roundedButton("+ Registrar APUNAB", C_ORANGE, Color.WHITE, F_BOLD_SM);
         btnRegister.addActionListener(e -> cardLayout.show(cardHolder, "apunab"));
 
         header.add(headerText, BorderLayout.WEST);
         header.add(btnRegister, BorderLayout.EAST);
 
-        // Stats grid — it actually reads from the actual student object...
-        long balance = student.getApunabBalance();
-        long goal = 100_000L;
-        long missing = goal - balance;
+        // Datos reales desde DataManager
+        String code = student.getCode();
+        long balance = dm.getBalance(code);
+        long needed = dm.getApunabNeeded(code);
+        long weekly = dm.getWeeklyTotal(code);
+        long monthly = dm.getMonthlyTotal(code);
+        long semester = dm.getSemesterTotal(code);
+        int places = dm.getEnrolledPlaces(code).size();
 
+        // Formato con signo + para valores positivos
         JPanel grid = new JPanel(new GridLayout(2, 3, 14, 14));
         grid.setOpaque(false);
-        grid.add(card("Total APUNAB", String.format("%,d", balance), "out of 100,000 to graduate", C_ORANGE));
-        grid.add(card("This Week", "+1,250", "APUNAB earned", new Color(0x27, 0xAE, 0x60)));
-        grid.add(card("This Month", "+4,800", "APUNAB earned", new Color(0x29, 0x80, 0xB9)));
-        grid.add(card("This Semester", "+22,100", "APUNAB earned", new Color(0x8E, 0x44, 0xAD)));
-        grid.add(card("Still Needed", String.format("%,d", missing), "to graduate (goal 100K)",
-                new Color(0xE7, 0x4C, 0x3C)));
-        grid.add(card("Active Places", "3", "registered places", new Color(0x16, 0xA0, 0x85)));
+        grid.add(card("Total APUNAB", fmt(balance), "de 100,000 para graduarse", C_ORANGE));
+        grid.add(card("Esta Semana", fmtSigned(weekly), "APUNAB ganadas", new Color(0x27, 0xAE, 0x60)));
+        grid.add(card("Este Mes", fmtSigned(monthly), "APUNAB ganadas", new Color(0x29, 0x80, 0xB9)));
+        grid.add(card("Este Semestre", fmtSigned(semester), "APUNAB ganadas", new Color(0x8E, 0x44, 0xAD)));
+        grid.add(card("APUNAB Faltantes", fmt(needed), "para graduarse (meta 100K)", new Color(0xE7, 0x4C, 0x3C)));
+        grid.add(card("Lugares Activos", String.valueOf(places), "lugares registrados", new Color(0x16, 0xA0, 0x85)));
 
-        // Quick actions
+        // Accesos rapidos
         JPanel actions = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 0));
         actions.setOpaque(false);
         actions.setBorder(new EmptyBorder(18, 0, 0, 0));
-        actions.add(roundedButton("View Places", C_ORANGE_BG, C_ORANGE, F_PLAIN_SM));
-        actions.add(roundedButton("APUNAB History", new Color(0xEE, 0xEE, 0xEE), C_TEXT, F_PLAIN_SM));
-        actions.add(roundedButton("Statistics", new Color(0xEE, 0xEE, 0xEE), C_TEXT, F_PLAIN_SM));
-        actions.add(roundedButton("Join a Place", new Color(0xEE, 0xEE, 0xEE), C_TEXT, F_PLAIN_SM));
+        actions.add(roundedButton("Ver Lugares", C_ORANGE_BG, C_ORANGE, F_PLAIN_SM));
+        actions.add(roundedButton("Historial de APUNAB", new Color(0xEE, 0xEE, 0xEE), C_TEXT, F_PLAIN_SM));
+        actions.add(roundedButton("Estadisticas", new Color(0xEE, 0xEE, 0xEE), C_TEXT, F_PLAIN_SM));
+        actions.add(roundedButton("Registrarse en Lugar", new Color(0xEE, 0xEE, 0xEE), C_TEXT, F_PLAIN_SM));
 
         JPanel center = new JPanel(new BorderLayout());
         center.setOpaque(false);
@@ -290,18 +296,18 @@ public class MainDashboard extends JFrame {
         return panel;
     }
 
-    /** Temporary placeholder panel for screens not built yet. */
+    /** Panel temporal para secciones que aun no estan construidas. */
     JPanel placeholder(String name) {
         JPanel p = new JPanel(new GridBagLayout());
         p.setBackground(C_BG);
-        JLabel lbl = new JLabel(name + " — coming soon");
+        JLabel lbl = new JLabel(name + " — proximamente");
         lbl.setFont(F_BOLD_MD);
         lbl.setForeground(C_MUTED);
         p.add(lbl);
         return p;
     }
 
-    // ── Reusable components ───────────────────────────────────────────────────
+    // ── Componentes reutilizables ─────────────────────────────────────────────
 
     JPanel buildAvatar() {
         JPanel avatar = new JPanel() {
@@ -324,6 +330,7 @@ public class MainDashboard extends JFrame {
         return avatar;
     }
 
+    /** Chip en el sidebar que muestra el balance total y progreso. */
     JPanel buildApunabChip() {
         JPanel chip = new JPanel() {
             @Override
@@ -339,20 +346,21 @@ public class MainDashboard extends JFrame {
         chip.setMaximumSize(new Dimension(198, 70));
         chip.setBorder(new EmptyBorder(12, 16, 12, 16));
 
-        long bal = student.getApunabBalance();
-        int pct = (int) (bal * 100 / 100_000L);
+        long bal = dm.getBalance(student.getCode());
+        long needed = dm.getApunabNeeded(student.getCode());
+        int pct = (int) (bal * 100 / DataManager.GRADUATION_GOAL);
 
-        JLabel t1 = new JLabel("My APUNAB");
+        JLabel t1 = new JLabel("Mis APUNAB");
         t1.setFont(F_PLAIN_SM);
         t1.setForeground(C_MUTED);
         t1.setAlignmentX(LEFT_ALIGNMENT);
 
-        JLabel t2 = new JLabel(String.format("%,d", bal));
+        JLabel t2 = new JLabel(fmt(bal));
         t2.setFont(new Font("Dialog", Font.BOLD, 20));
         t2.setForeground(C_ORANGE);
         t2.setAlignmentX(LEFT_ALIGNMENT);
 
-        JLabel t3 = new JLabel(String.format("Missing %,d  %d%%", 100_000L - bal, pct));
+        JLabel t3 = new JLabel(String.format("Faltan %s  %d%%", fmt(needed), pct));
         t3.setFont(F_PLAIN_SM);
         t3.setForeground(C_MUTED);
         t3.setAlignmentX(LEFT_ALIGNMENT);
@@ -370,6 +378,7 @@ public class MainDashboard extends JFrame {
         return wrap;
     }
 
+    /** Tarjeta de estadistica con barra lateral de color. */
     JPanel card(String title, String value, String subtitle, Color accent) {
         JPanel card = new JPanel() {
             @Override
@@ -413,6 +422,7 @@ public class MainDashboard extends JFrame {
         return card;
     }
 
+    /** Boton con bordes redondeados sin borde nativo de Swing. */
     JButton roundedButton(String text, Color bg, Color fg, Font font) {
         JButton btn = new JButton(text) {
             @Override
@@ -452,13 +462,26 @@ public class MainDashboard extends JFrame {
         return d;
     }
 
+    // ── Utilidades de formato ─────────────────────────────────────────────────
+
+    /** Formato con separador de miles: 45230 -> "45,230" */
+    static String fmt(long n) {
+        return String.format("%,d", n);
+    }
+
+    /** Formato con signo: 1250 -> "+1,250", -500 -> "-500" */
+    static String fmtSigned(long n) {
+        return (n >= 0 ? "+" : "") + fmt(n);
+    }
+
+    // ── Cerrar sesion ─────────────────────────────────────────────────────────
+
     void logout() {
         int r = JOptionPane.showConfirmDialog(this,
-                "Cerrar sesión?", "Confirmar", JOptionPane.YES_NO_OPTION);
+                "Cerrar sesion?", "Confirmar", JOptionPane.YES_NO_OPTION);
         if (r == JOptionPane.YES_OPTION) {
             dispose();
             new LoginPanel().setVisible(true);
         }
     }
-
 }

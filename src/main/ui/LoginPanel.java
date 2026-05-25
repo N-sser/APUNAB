@@ -10,7 +10,7 @@ import java.awt.event.*;
 
 public class LoginPanel extends JFrame {
 
-    // ── Palette (same as dashboard) ───────────────────────────────────────────
+    // ── Paleta (misma que el dashboard) ───────────────────────────────────────
     static final Color C_ORANGE = new Color(0xFF, 0x8C, 0x00);
     static final Color C_BG = Color.WHITE;
     static final Color C_TEXT = new Color(0x1A, 0x1A, 0x1A);
@@ -37,28 +37,28 @@ public class LoginPanel extends JFrame {
         root.setBackground(C_BG);
         root.setBorder(new EmptyBorder(50, 48, 50, 48));
 
-        // Title
+        // Titulo
         JLabel lblTitle = centered("APUNAB", new Font("Dialog", Font.BOLD, 32), C_ORANGE);
         JLabel lblSub = centered("Universidad Autonoma de Bucaramanga",
                 new Font("Dialog", Font.PLAIN, 11), C_MUTED);
 
-        // Fields
-        setupField(fieldCode, "ID code", false);
-        setupField(fieldPass, "Contraseña", true);
+        // Campos
+        setupField(fieldCode, "Codigo de estudiante", false);
+        setupField(fieldPass, "Contrasena", true);
 
-        // Error label
+        // Etiqueta de error
         lblError.setFont(new Font("Dialog", Font.PLAIN, 11));
         lblError.setForeground(C_ERROR);
         lblError.setAlignmentX(CENTER_ALIGNMENT);
 
-        // Buttons
-        JButton btnLogin = buildButton("Iniciar sesión", true);
+        // Botones
+        JButton btnLogin = buildButton("Iniciar sesion", true);
         JButton btnRegister = buildButton("Crear cuenta", false);
 
         btnLogin.addActionListener(e -> attemptLogin());
         btnRegister.addActionListener(e -> openRegister());
 
-        // Allow Enter key to submit
+        // Enter para enviar el formulario
         KeyAdapter onEnter = new KeyAdapter() {
             @Override
             public void keyPressed(KeyEvent e) {
@@ -86,7 +86,7 @@ public class LoginPanel extends JFrame {
         setContentPane(root);
     }
 
-    // ── Logic ─────────────────────────────────────────────────────────────────
+    // ── Logica ────────────────────────────────────────────────────────────────
 
     void attemptLogin() {
         String code = fieldCode.getText().trim();
@@ -103,14 +103,14 @@ public class LoginPanel extends JFrame {
             dispose();
             new MainDashboard(student).setVisible(true);
         } else {
-            showError("Codigo o contraseña incorrecta.");
+            showError("Codigo o contrasena incorrecta.");
             fieldPass.setText("");
         }
     }
 
     void openRegister() {
-        // TODO: Future RegisterPanel
-        JOptionPane.showMessageDialog(this, "Registration coming soon.");
+        // TODO: abrir panel de registro
+        JOptionPane.showMessageDialog(this, "Registro proximamente.");
     }
 
     void showError(String msg) {
@@ -127,10 +127,10 @@ public class LoginPanel extends JFrame {
                 BorderFactory.createLineBorder(C_BORDER, 1, true),
                 new EmptyBorder(10, 14, 10, 14)));
 
-        // Placeholder logic
+        // Logica de placeholder
         if (isPassword) {
             JPasswordField pf = (JPasswordField) field;
-            pf.setEchoChar((char) 0); // show placeholder as plain text
+            pf.setEchoChar((char) 0); // mostrar placeholder como texto plano
             pf.setText(placeholder);
             pf.setForeground(C_MUTED);
             pf.addFocusListener(new FocusAdapter() {
@@ -138,7 +138,7 @@ public class LoginPanel extends JFrame {
                 public void focusGained(FocusEvent e) {
                     if (new String(pf.getPassword()).equals(placeholder)) {
                         pf.setText("");
-                        pf.setEchoChar('*'); // hide actual password
+                        pf.setEchoChar('*'); // ocultar contrasena real
                         pf.setForeground(C_TEXT);
                     }
                 }

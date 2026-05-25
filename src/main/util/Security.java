@@ -5,8 +5,10 @@ import java.security.NoSuchAlgorithmException;
 
 public class Security {
 
-    // Prepend the student code as a free salt so two students
-    // with the same password don't produce the same hash.
+    /**
+     * Hashea la contrasena con SHA-256 usando el codigo del estudiante
+     * como sal. Dos estudiantes con la misma contrasena producen hashes distintos.
+     */
     public static String hashPassword(String code, String rawPassword) {
         try {
             MessageDigest md = MessageDigest.getInstance("SHA-256");
@@ -16,7 +18,7 @@ public class Security {
                 sb.append(String.format("%02x", b));
             return sb.toString();
         } catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException("SHA-256 not available", e);
+            throw new RuntimeException("SHA-256 no disponible", e);
         }
     }
 }
