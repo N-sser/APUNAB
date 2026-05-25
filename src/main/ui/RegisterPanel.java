@@ -1,14 +1,13 @@
 package main.ui;
 
 import main.data.DataManager;
-import main.model.Student;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.*;
 
-public class LoginPanel extends JFrame {
+public class RegisterPanel extends JFrame {
 
     // ── Paleta (misma que el dashboard) ───────────────────────────────────────
     static final Color C_ORANGE = new Color(0xFF, 0x8C, 0x00);
@@ -19,13 +18,19 @@ public class LoginPanel extends JFrame {
     static final Color C_ERROR = new Color(0xE7, 0x4C, 0x3C);
 
     private final JTextField fieldCode = new JTextField();
+    private final JTextField fieldName = new JTextField();
+    private final JTextField fieldEmail = new JTextField();
+    private final JTextField fieldSemester = new JTextField();
     private final JPasswordField fieldPass = new JPasswordField();
     private final JLabel lblError = new JLabel(" ");
 
-    public LoginPanel() {
-        setTitle("APUNAB - Login");
+    private LoginPanel previousLoginPanel; // ✅ Declarada como atributo
+
+    public RegisterPanel(LoginPanel previousLoginPanel) {
+        this.previousLoginPanel = previousLoginPanel;
+        setTitle("APUNAB - Register");
         setSize(400, 460);
-        setDefaultCloseOperation(EXIT_ON_CLOSE);
+        setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         setLocationRelativeTo(null);
         setResizable(false);
         buildUI();
@@ -43,30 +48,29 @@ public class LoginPanel extends JFrame {
                 new Font("Dialog", Font.PLAIN, 11), C_MUTED);
 
         // Campos
+        setupField(fieldName, "Nombre completo", false);
+        setupField(fieldEmail, "Email institucional", false);
         setupField(fieldCode, "Codigo de estudiante", false);
+        setupField(fieldSemester, "Semestre", false);
         setupField(fieldPass, "Contrasena", true);
-
         // Etiqueta de error
         lblError.setFont(new Font("Dialog", Font.PLAIN, 11));
         lblError.setForeground(C_ERROR);
         lblError.setAlignmentX(CENTER_ALIGNMENT);
 
         // Botones
-        JButton btnLogin = buildButton("Iniciar sesion", true);
-        JButton btnRegister = buildButton("Crear cuenta", false);
+        JButton btnRegister = buildButton("Crear cuenta", true);
 
-        btnLogin.addActionListener(e -> attemptLogin());
-        btnRegister.addActionListener(e -> openRegister());
+        btnRegister.addActionListener(e -> createUser());
 
         // Enter para enviar el formulario
         KeyAdapter onEnter = new KeyAdapter() {
             @Override
             public void keyPressed(KeyEvent e) {
                 if (e.getKeyCode() == KeyEvent.VK_ENTER)
-                    attemptLogin();
+                    createUser();
             }
         };
-        fieldCode.addKeyListener(onEnter);
         fieldPass.addKeyListener(onEnter);
 
         root.add(lblTitle);
@@ -75,11 +79,15 @@ public class LoginPanel extends JFrame {
         root.add(Box.createVerticalStrut(36));
         root.add(fieldCode);
         root.add(Box.createVerticalStrut(12));
-        root.add(fieldPass);
+        root.add(fieldEmail);
         root.add(Box.createVerticalStrut(6));
+        root.add(fieldName);
+        root.add(Box.createVerticalStrut(6));
+        root.add(fieldSemester);
+        root.add(Box.createVerticalStrut(6));
+        root.add(fieldPass);
+        root.add(Box.createVerticalStrut(1));
         root.add(lblError);
-        root.add(Box.createVerticalStrut(12));
-        root.add(btnLogin);
         root.add(Box.createVerticalStrut(8));
         root.add(btnRegister);
 
@@ -87,36 +95,30 @@ public class LoginPanel extends JFrame {
     }
 
     // ── Logica ────────────────────────────────────────────────────────────────
-
-    void attemptLogin() {
+    void createUser() {
         String code = fieldCode.getText().trim();
+        String email = fieldEmail.getText().trim();
+        String name = fieldName.getText().trim();
         String raw = new String(fieldPass.getPassword()).trim();
 
-        if (code.isEmpty() || raw.isEmpty()) {
+        if (code.isEmpty() || email.isEmpty() || name.isEmpty() || raw.isEmpty()) {
             showError("Porfavor rellene todos los campos.");
             return;
         }
 
-        Student student = DataManager.getInstance().login(code, raw);
+        boolean validation = DataManager.getInstance().register(code, email, name, raw);
 
-        if (student != null) {
-            dispose();
-            new MainDashboard(student).setVisible(true);
+        if (validation) {
+            confirmation(true);
         } else {
-            showError("Codigo o contrasena incorrecta.");
-            fieldPass.setText("");
+            confirmation(false);
         }
-    }
-
-    void openRegister() {
-        new RegisterPanel(this).setVisible(true);
-        setVisible(false);
+        dispose();
     }
 
     void showError(String msg) {
         lblError.setText(msg);
     }
-
     // ── Helpers ───────────────────────────────────────────────────────────────
 
     void setupField(JTextField field, String placeholder, boolean isPassword) {
@@ -156,6 +158,7 @@ public class LoginPanel extends JFrame {
             field.setText(placeholder);
             field.setForeground(C_MUTED);
             field.addFocusListener(new FocusAdapter() {
+
                 @Override
                 public void focusGained(FocusEvent e) {
                     if (field.getText().equals(placeholder)) {
@@ -171,6 +174,7 @@ public class LoginPanel extends JFrame {
                         field.setForeground(C_MUTED);
                     }
                 }
+
             });
         }
     }
@@ -211,5 +215,29 @@ public class LoginPanel extends JFrame {
         lbl.setAlignmentX(CENTER_ALIGNMENT);
         lbl.setMaximumSize(new Dimension(Integer.MAX_VALUE, 40));
         return lbl;
+    }
+
+    void confirmation(boolean t) {
+        if (t) {
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Usuario creado exitosamente. Ingrese en la página principal.",
+                    "Status",
+                    JOptionPane.PLAIN_MESSAGE);
+        } else {
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Contraseña ya registrada, intente con otra lol.",
+                    "Status",
+                    JOptionPane.PLAIN_MESSAGE);
+        }
+    }
+
+    @Override
+    public void dispose() {
+        if (previousLoginPanel != null) {
+            previousLoginPanel.setVisible(true);
+        }
+        super.dispose();
     }
 }
