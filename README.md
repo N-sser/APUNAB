@@ -14,7 +14,7 @@ Aplicación gráfica en Java que permite a los estudiantes gestionar, consultar 
 - [ ] Búsqueda de lugares por nombre
 - [ ] Filtros de lugares por categoría
 - [ ] Gestión de lugares favoritos
-- [ ] Historial de transacciones de APUNAB
+- [x] Historial de transacciones de APUNAB
 - [ ] Edición de perfil de usuario
 - [ ] Notificaciones internas
 - [ ] Exportación de reportes en CSV
