@@ -9,13 +9,19 @@ public class Place {
     private String id;
     private String name;
     private String description;
+    private String category;
     private List<String> enrolledStudentCodes; // students currently registered here
 
-    // ── Constructor ───────────────────────────────────────────────────────────
+    // ── Constructors ──────────────────────────────────────────────────────────
     public Place(String id, String name, String description) {
+        this(id, name, description, "Otro");
+    }
+
+    public Place(String id, String name, String description, String category) {
         this.id = id;
         this.name = name;
         this.description = description;
+        this.category = category;
         this.enrolledStudentCodes = new ArrayList<>();
     }
 
@@ -32,6 +38,10 @@ public class Place {
         return description;
     }
 
+    public String getCategory() {
+        return category;
+    }
+
     public List<String> getEnrolledStudentCodes() {
         return enrolledStudentCodes;
     }
@@ -43,6 +53,10 @@ public class Place {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public void setCategory(String category) {
+        this.category = category;
     }
 
     // ── Enrollment ────────────────────────────────────────────────────────────

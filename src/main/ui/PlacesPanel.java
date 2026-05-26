@@ -7,11 +7,13 @@ import main.model.Student;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
+import java.util.Arrays;
 import java.util.List;
 
 /**
  * Panel de gestion de lugares APUNAB.
- * Muestra todos los lugares en tarjetas con opcion de inscribirse o darse de baja.
+ * Muestra todos los lugares en tarjetas con opcion de inscribirse o darse de
+ * baja.
  * Incluye CRUD basico: agregar, editar, eliminar lugares.
  */
 public class PlacesPanel extends JPanel {
@@ -20,16 +22,23 @@ public class PlacesPanel extends JPanel {
     private final DataManager dm = DataManager.getInstance();
     private JPanel cardsContainer;
 
-    static final Color C_ORANGE    = new Color(0xFF, 0x8C, 0x00);
+    // ── Filtros ──────────────────────────────────────────────────────────────
+    private JTextField searchField;
+    private JComboBox<String> categoryFilter;
+    private boolean showFavOnly = false;
+
+    static final String[] CATEGORIES = { "Todas", "Cafeteria", "Deportes", "Actividades", "Biblioteca", "Otro" };
+
+    static final Color C_ORANGE = new Color(0xFF, 0x8C, 0x00);
     static final Color C_ORANGE_BG = new Color(0xFF, 0x8C, 0x00, 30);
-    static final Color C_BG        = new Color(0xF5, 0xF5, 0xF5);
-    static final Color C_WHITE     = Color.WHITE;
-    static final Color C_TEXT      = new Color(0x1A, 0x1A, 0x1A);
-    static final Color C_MUTED     = new Color(0x88, 0x88, 0x88);
-    static final Color C_BORDER    = new Color(0xE8, 0xE8, 0xE8);
-    static final Color C_GREEN     = new Color(0x27, 0xAE, 0x60);
-    static final Color C_GREEN_BG  = new Color(0x27, 0xAE, 0x60, 30);
-    static final Color C_RED       = new Color(0xE7, 0x4C, 0x3C);
+    static final Color C_BG = new Color(0xF5, 0xF5, 0xF5);
+    static final Color C_WHITE = Color.WHITE;
+    static final Color C_TEXT = new Color(0x1A, 0x1A, 0x1A);
+    static final Color C_MUTED = new Color(0x88, 0x88, 0x88);
+    static final Color C_BORDER = new Color(0xE8, 0xE8, 0xE8);
+    static final Color C_GREEN = new Color(0x27, 0xAE, 0x60);
+    static final Color C_GREEN_BG = new Color(0x27, 0xAE, 0x60, 30);
+    static final Color C_RED = new Color(0xE7, 0x4C, 0x3C);
 
     public PlacesPanel(Student student) {
         this.student = student;
@@ -40,10 +49,10 @@ public class PlacesPanel extends JPanel {
     }
 
     private void buildUI() {
-        // Encabezado
+        // ── Fila 1: titulo + boton agregar ───────────────────────────────────
         JPanel header = new JPanel(new BorderLayout());
         header.setOpaque(false);
-        header.setBorder(new EmptyBorder(0, 0, 20, 0));
+        header.setBorder(new EmptyBorder(0, 0, 12, 0));
 
         JLabel lblTitle = new JLabel("Lugares APUNAB");
         lblTitle.setFont(new Font("Dialog", Font.BOLD, 22));
@@ -66,7 +75,78 @@ public class PlacesPanel extends JPanel {
         header.add(titleWrap, BorderLayout.WEST);
         header.add(btnAdd, BorderLayout.EAST);
 
-        // Contenedor de tarjetas con scroll
+        // ── Fila 2: busqueda + categoria + favoritos ─────────────────────────
+        JPanel filterRow = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
+        filterRow.setOpaque(false);
+        filterRow.setBorder(new EmptyBorder(0, 0, 14, 0));
+
+        searchField = new JTextField(18);
+        searchField.setFont(new Font("Dialog", Font.PLAIN, 13));
+        searchField.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(C_BORDER, 1, true),
+                new EmptyBorder(6, 10, 6, 10)));
+        searchField.setToolTipText("Buscar por nombre");
+        // Placeholder
+        searchField.setText("Buscar lugar...");
+        searchField.setForeground(C_MUTED);
+        searchField.addFocusListener(new java.awt.event.FocusAdapter() {
+            @Override
+            public void focusGained(java.awt.event.FocusEvent e) {
+                if (searchField.getText().equals("Buscar lugar...")) {
+                    searchField.setText("");
+                    searchField.setForeground(C_TEXT);
+                }
+            }
+
+            @Override
+            public void focusLost(java.awt.event.FocusEvent e) {
+                if (searchField.getText().isEmpty()) {
+                    searchField.setText("Buscar lugar...");
+                    searchField.setForeground(C_MUTED);
+                }
+            }
+        });
+        searchField.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
+            public void insertUpdate(javax.swing.event.DocumentEvent e) {
+                refreshCards();
+            }
+
+            public void removeUpdate(javax.swing.event.DocumentEvent e) {
+                refreshCards();
+            }
+
+            public void changedUpdate(javax.swing.event.DocumentEvent e) {
+                refreshCards();
+            }
+        });
+
+        categoryFilter = new JComboBox<>(CATEGORIES);
+        categoryFilter.setFont(new Font("Dialog", Font.PLAIN, 12));
+        categoryFilter.addActionListener(e -> refreshCards());
+
+        JButton btnFav = styledButton("Favoritos", new Color(0xEE, 0xEE, 0xEE), C_MUTED);
+        btnFav.addActionListener(e -> {
+            showFavOnly = !showFavOnly;
+            if (showFavOnly) {
+                btnFav.setForeground(C_ORANGE);
+            } else {
+                btnFav.setForeground(C_MUTED);
+            }
+            refreshCards();
+        });
+
+        filterRow.add(searchField);
+        filterRow.add(categoryFilter);
+        filterRow.add(btnFav);
+
+        // ── Encabezado compuesto ──────────────────────────────────────────────
+        JPanel topSection = new JPanel();
+        topSection.setLayout(new BoxLayout(topSection, BoxLayout.Y_AXIS));
+        topSection.setOpaque(false);
+        topSection.add(header);
+        topSection.add(filterRow);
+
+        // ── Contenedor de tarjetas con scroll ────────────────────────────────
         cardsContainer = new JPanel();
         cardsContainer.setLayout(new BoxLayout(cardsContainer, BoxLayout.Y_AXIS));
         cardsContainer.setOpaque(false);
@@ -79,16 +159,34 @@ public class PlacesPanel extends JPanel {
         scroll.getViewport().setOpaque(false);
         scroll.getVerticalScrollBar().setUnitIncrement(16);
 
-        add(header, BorderLayout.NORTH);
+        add(topSection, BorderLayout.NORTH);
         add(scroll, BorderLayout.CENTER);
     }
 
-    /** Reconstruye la lista de tarjetas de lugares. */
+    /** Reconstruye la lista de tarjetas de lugares aplicando filtros activos. */
     private void refreshCards() {
         cardsContainer.removeAll();
+
+        // Leer filtros actuales
+        String query = searchField != null ? searchField.getText().trim().toLowerCase() : "";
+        if (query.equals("buscar lugar..."))
+            query = "";
+        String catSel = categoryFilter != null ? (String) categoryFilter.getSelectedItem() : "Todas";
+
         List<Place> allPlaces = dm.getPlaces();
+        final String finalQuery = query;
 
         for (Place place : allPlaces) {
+            // Filtro de texto
+            if (!finalQuery.isEmpty() && !place.getName().toLowerCase().contains(finalQuery))
+                continue;
+            // Filtro de categoria
+            if (!"Todas".equals(catSel) && !catSel.equals(place.getCategory()))
+                continue;
+            // Filtro de favoritos
+            if (showFavOnly && !dm.isFavorite(student.getCode(), place.getId()))
+                continue;
+
             cardsContainer.add(buildPlaceCard(place));
             cardsContainer.add(Box.createVerticalStrut(10));
         }
@@ -103,7 +201,8 @@ public class PlacesPanel extends JPanel {
         boolean enrolled = place.isEnrolled(student.getCode());
 
         JPanel card = new JPanel(new BorderLayout(16, 0)) {
-            @Override protected void paintComponent(Graphics g) {
+            @Override
+            protected void paintComponent(Graphics g) {
                 Graphics2D g2 = (Graphics2D) g.create();
                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
                 // Sombra
@@ -141,18 +240,33 @@ public class PlacesPanel extends JPanel {
         lblCount.setFont(new Font("Dialog", Font.PLAIN, 11));
         lblCount.setForeground(C_MUTED);
 
+        JLabel lblCategory = new JLabel(place.getCategory());
+        lblCategory.setFont(new Font("Dialog", Font.PLAIN, 11));
+        lblCategory.setForeground(C_ORANGE);
+
         info.add(lblName);
         info.add(Box.createVerticalStrut(4));
         info.add(lblDesc);
         info.add(Box.createVerticalStrut(3));
         info.add(lblCount);
+        info.add(Box.createVerticalStrut(2));
+        info.add(lblCategory);
 
         // Botones de accion
         JPanel actions = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
         actions.setOpaque(false);
 
+        // Estrella de favorito
+        boolean isFav = dm.isFavorite(student.getCode(), place.getId());
+        JButton btnStar = styledButton(isFav ? "★" : "☆", new Color(0xEE, 0xEE, 0xEE),
+                isFav ? new Color(0xFF, 0xB3, 0x00) : C_MUTED);
+        btnStar.addActionListener(e -> {
+            dm.toggleFavorite(student.getCode(), place.getId());
+            refreshCards();
+        });
+
         if (enrolled) {
-            JButton btnLeave = styledButton("Darse de baja", new Color(0xEE,0xEE,0xEE), C_RED);
+            JButton btnLeave = styledButton("Darse de baja", new Color(0xEE, 0xEE, 0xEE), C_RED);
             btnLeave.addActionListener(e -> {
                 dm.leavePlace(student.getCode(), place.getId());
                 refreshCards();
@@ -171,16 +285,17 @@ public class PlacesPanel extends JPanel {
             actions.add(btnJoin);
         }
 
-        JButton btnDel = styledButton("Eliminar", new Color(0xEE,0xEE,0xEE), C_RED);
+        JButton btnDel = styledButton("Eliminar", new Color(0xEE, 0xEE, 0xEE), C_RED);
         btnDel.addActionListener(e -> {
             int r = JOptionPane.showConfirmDialog(this,
-                "Eliminar " + place.getName() + "?", "Confirmar",
-                JOptionPane.YES_NO_OPTION);
+                    "Eliminar " + place.getName() + "?", "Confirmar",
+                    JOptionPane.YES_NO_OPTION);
             if (r == JOptionPane.YES_OPTION) {
                 dm.deletePlace(place.getId());
                 refreshCards();
             }
         });
+        actions.add(btnStar);
         actions.add(btnDel);
 
         card.add(info, BorderLayout.CENTER);
@@ -193,21 +308,25 @@ public class PlacesPanel extends JPanel {
     private void showAddDialog() {
         JTextField fieldName = new JTextField();
         JTextField fieldDesc = new JTextField();
+        String[] catOptions = Arrays.copyOfRange(CATEGORIES, 1, CATEGORIES.length); // sin "Todas"
+        JComboBox<String> comboCategory = new JComboBox<>(catOptions);
 
         Object[] fields = {
-            "Nombre del lugar:", fieldName,
-            "Descripcion:", fieldDesc
+                "Nombre del lugar:", fieldName,
+                "Descripcion:", fieldDesc,
+                "Categoria:", comboCategory
         };
 
         int result = JOptionPane.showConfirmDialog(this, fields,
-            "Agregar lugar", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+                "Agregar lugar", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
 
         if (result == JOptionPane.OK_OPTION) {
             String name = fieldName.getText().trim();
             String desc = fieldDesc.getText().trim();
+            String cat = (String) comboCategory.getSelectedItem();
             if (!name.isEmpty()) {
                 String id = "P" + String.format("%03d", dm.getPlaces().size() + 1);
-                dm.addPlace(new Place(id, name, desc.isEmpty() ? "Sin descripcion" : desc));
+                dm.addPlace(new Place(id, name, desc.isEmpty() ? "Sin descripcion" : desc, cat));
                 refreshCards();
             }
         }
@@ -217,7 +336,8 @@ public class PlacesPanel extends JPanel {
 
     private JButton styledButton(String text, Color bg, Color fg) {
         JButton btn = new JButton(text) {
-            @Override protected void paintComponent(Graphics g) {
+            @Override
+            protected void paintComponent(Graphics g) {
                 Graphics2D g2 = (Graphics2D) g.create();
                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
                 g2.setColor(getModel().isRollover() ? bg.darker() : bg);

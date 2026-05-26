@@ -11,9 +11,9 @@ Aplicación gráfica en Java que permite a los estudiantes gestionar, consultar 
 - [ ] Implementación de tema claro y oscuro manual
 - [ ] Adaptación automática del tema según el sistema operativo
 - [ ] Cambio dinámico del tema según la hora del día
-- [ ] Búsqueda de lugares por nombre
-- [ ] Filtros de lugares por categoría
-- [ ] Gestión de lugares favoritos
+- [x] Búsqueda de lugares por nombre
+- [x] Filtros de lugares por categoría
+- [x] Gestión de lugares favoritos
 - [x] Historial de transacciones de APUNAB
 - [ ] Edición de perfil de usuario
 - [ ] Notificaciones internas

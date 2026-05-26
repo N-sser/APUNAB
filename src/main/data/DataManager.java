@@ -20,6 +20,7 @@ public class DataManager {
     private final Map<String, Student> students = new HashMap<>();
     private final List<Bet> bets = new ArrayList<>();
     private final Map<String, Place> places = new LinkedHashMap<>();
+    private final Map<String, Set<String>> favorites = new HashMap<>();
 
     public static final long GRADUATION_GOAL = 100_000L;
 
@@ -82,6 +83,10 @@ public class DataManager {
 
     private static Path placesFile() {
         return getDataDir().resolve("places.txt");
+    }
+
+    private static Path favoritesFile() {
+        return getDataDir().resolve("favorites.txt");
     }
 
     private boolean dataFilesExist() {
@@ -272,6 +277,20 @@ public class DataManager {
     }
 
     // ═══════════════════════════════════════════════════════════════════════════
+    // FAVORITOS
+    // ═══════════════════════════════════════════════════════════════════════════
+
+    public boolean isFavorite(String studentCode, String placeId) {
+        return favorites.getOrDefault(studentCode, Collections.emptySet()).contains(placeId);
+    }
+
+    public void toggleFavorite(String studentCode, String placeId) {
+        Set<String> fav = favorites.computeIfAbsent(studentCode, k -> new HashSet<>());
+        if (!fav.remove(placeId)) fav.add(placeId);
+        saveFavorites();
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════════
     // INTERNO
     // ═══════════════════════════════════════════════════════════════════════════
 
@@ -300,6 +319,7 @@ public class DataManager {
         saveStudents();
         saveBets();
         savePlaces();
+        saveFavorites();
     }
 
     private void saveStudents() {
@@ -340,17 +360,29 @@ public class DataManager {
     private void savePlaces() {
         try (BufferedWriter w = Files.newBufferedWriter(placesFile())) {
             for (Place p : places.values()) {
-                // Lista de inscritos separada por coma, vacia si no hay nadie
                 String enrolled = String.join(",", p.getEnrolledStudentCodes());
                 w.write(String.join(D,
                         p.getId(),
                         p.getName(),
                         p.getDescription(),
+                        p.getCategory(),
                         enrolled));
                 w.newLine();
             }
         } catch (IOException e) {
             System.err.println("Error guardando lugares: " + e.getMessage());
+        }
+    }
+
+    private void saveFavorites() {
+        try (BufferedWriter w = Files.newBufferedWriter(favoritesFile())) {
+            for (Map.Entry<String, Set<String>> e : favorites.entrySet()) {
+                if (e.getValue().isEmpty()) continue;
+                w.write(e.getKey() + D + String.join(",", e.getValue()));
+                w.newLine();
+            }
+        } catch (IOException e) {
+            System.err.println("Error guardando favoritos: " + e.getMessage());
         }
     }
 
@@ -362,12 +394,13 @@ public class DataManager {
         students.clear();
         bets.clear();
         places.clear();
+        favorites.clear();
 
         loadStudents();
         loadBets();
         loadPlaces();
+        loadFavorites();
 
-        // Sincronizar balances desde las apuestas cargadas
         for (String code : students.keySet()) {
             syncBalance(code);
         }
@@ -425,25 +458,30 @@ public class DataManager {
         try {
             for (String line : Files.readAllLines(placesFile())) {
                 line = line.trim();
-                if (line.isEmpty())
-                    continue;
+                if (line.isEmpty()) continue;
                 String[] parts = line.split("\\|", -1);
-                if (parts.length < 4)
-                    continue;
+                if (parts.length < 4) continue;
 
-                String id = parts[0];
-                String name = parts[1];
+                String id          = parts[0];
+                String name        = parts[1];
                 String description = parts[2];
-                String enrolledRaw = parts[3];
+                // Backward compat: old format has 4 fields (no category)
+                String category;
+                String enrolledRaw;
+                if (parts.length >= 5) {
+                    category    = parts[3];
+                    enrolledRaw = parts[4];
+                } else {
+                    category    = "Otro";
+                    enrolledRaw = parts[3];
+                }
 
-                Place place = new Place(id, name, description);
+                Place place = new Place(id, name, description, category);
 
-                // Reconstituir lista de inscritos
                 if (!enrolledRaw.isEmpty()) {
                     for (String code : enrolledRaw.split(",", -1)) {
                         code = code.trim();
-                        if (!code.isEmpty())
-                            place.enroll(code);
+                        if (!code.isEmpty()) place.enroll(code);
                     }
                 }
 
@@ -451,6 +489,26 @@ public class DataManager {
             }
         } catch (IOException e) {
             System.err.println("Error cargando lugares: " + e.getMessage());
+        }
+    }
+
+    private void loadFavorites() {
+        if (!Files.exists(favoritesFile())) return;
+        try {
+            for (String line : Files.readAllLines(favoritesFile())) {
+                line = line.trim();
+                if (line.isEmpty()) continue;
+                String[] parts = line.split("\\|", -1);
+                if (parts.length < 2) continue;
+                Set<String> fav = new HashSet<>();
+                for (String id : parts[1].split(",", -1)) {
+                    id = id.trim();
+                    if (!id.isEmpty()) fav.add(id);
+                }
+                favorites.put(parts[0], fav);
+            }
+        } catch (IOException e) {
+            System.err.println("Error cargando favoritos: " + e.getMessage());
         }
     }
 
@@ -467,11 +525,11 @@ public class DataManager {
         String hash = Security.hashPassword(code, "1234");
         students.put(code, new Student(code, "jperez123", "Juan Perez Gomez", "1st Semester", 0L, hash));
 
-        Place p1 = new Place("P001", "Cafeteria L", "Cafeteria del bloque L");
-        Place p2 = new Place("P002", "Cafeteria CSU", "Centro Social Universitario");
-        Place p3 = new Place("P003", "Cafeteria Bosque", "Cafeteria zona del Bosque");
-        Place p4 = new Place("P004", "Cafeteria Casona", "Cafeteria La Casona");
-        Place p5 = new Place("P005", "Banu", "Punto Banu campus principal");
+        Place p1 = new Place("P001", "Cafeteria L",      "Cafeteria del bloque L",    "Cafeteria");
+        Place p2 = new Place("P002", "Cafeteria CSU",    "Centro Social Universitario","Cafeteria");
+        Place p3 = new Place("P003", "Cafeteria Bosque", "Cafeteria zona del Bosque",  "Cafeteria");
+        Place p4 = new Place("P004", "Cafeteria Casona", "Cafeteria La Casona",        "Cafeteria");
+        Place p5 = new Place("P005", "Banu",             "Punto Banu campus principal","Actividades");
 
         p1.enroll(code);
         p3.enroll(code);
