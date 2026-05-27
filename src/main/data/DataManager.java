@@ -110,7 +110,7 @@ public class DataManager {
             return false;
         String hash = Security.hashPassword(code, rawPassword);
         students.put(code, new Student(code, email, name, "1st Semester", 0L, hash, ""));
-        saveAll();
+        saveStudents();
         return true;
     }
 
@@ -125,7 +125,7 @@ public class DataManager {
             return false;
         s.setEmail(email);
         s.setPhone(phone);
-        saveAll();
+        saveStudents();
         return true;
     }
 
@@ -136,7 +136,8 @@ public class DataManager {
     public void addBet(Bet bet) {
         bets.add(bet);
         syncBalance(bet.getStudentCode());
-        saveAll();
+        saveBets();
+        saveStudents();
     }
 
     public boolean updateBet(Bet updated) {
@@ -144,7 +145,8 @@ public class DataManager {
             if (bets.get(i).getId().equals(updated.getId())) {
                 bets.set(i, updated);
                 syncBalance(updated.getStudentCode());
-                saveAll();
+                saveBets();
+                saveStudents();
                 return true;
             }
         }
@@ -159,7 +161,8 @@ public class DataManager {
             return false;
         bets.remove(target);
         syncBalance(target.getStudentCode());
-        saveAll();
+        saveBets();
+        saveStudents();
         return true;
     }
 
@@ -243,21 +246,21 @@ public class DataManager {
 
     public void addPlace(Place place) {
         places.put(place.getId(), place);
-        saveAll();
+        savePlaces();
     }
 
     public boolean updatePlace(Place updated) {
         if (!places.containsKey(updated.getId()))
             return false;
         places.put(updated.getId(), updated);
-        saveAll();
+        savePlaces();
         return true;
     }
 
     public boolean deletePlace(String placeId) {
         if (places.remove(placeId) == null)
             return false;
-        saveAll();
+        savePlaces();
         return true;
     }
 
@@ -267,7 +270,7 @@ public class DataManager {
             return false;
         boolean ok = place.enroll(studentCode);
         if (ok)
-            saveAll();
+            savePlaces();
         return ok;
     }
 
@@ -277,7 +280,7 @@ public class DataManager {
             return false;
         boolean ok = place.leave(studentCode);
         if (ok)
-            saveAll();
+            savePlaces();
         return ok;
     }
 

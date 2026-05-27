@@ -82,7 +82,18 @@ public class BetsPanel extends JPanel {
                 return false;
             }
         };
-        table = new JTable(tableModel);
+        Color altRow = tm.isDark()
+                ? new Color(0x26, 0x26, 0x36)
+                : new Color(0xF7, 0xF7, 0xF7);
+        table = new JTable(tableModel) {
+            @Override
+            public Component prepareRenderer(javax.swing.table.TableCellRenderer renderer, int row, int col) {
+                Component c = super.prepareRenderer(renderer, row, col);
+                if (!isRowSelected(row))
+                    c.setBackground(row % 2 == 0 ? tm.getSurface() : altRow);
+                return c;
+            }
+        };
         styleTable();
         refreshTable();
 

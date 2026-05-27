@@ -288,9 +288,14 @@ public class StatsPanel extends JPanel {
     /** Tarjeta de resumen victorias vs derrotas. */
     private JPanel buildWinLossCard() {
         List<Bet> bets = dm.getBetsByStudent(student.getCode());
-        long won = bets.stream().filter(b -> b.getResult() == Bet.Result.WON).count();
-        long lost = bets.stream().filter(b -> b.getResult() == Bet.Result.LOST).count();
-        long pend = bets.stream().filter(b -> b.getResult() == Bet.Result.PENDING).count();
+        long won = 0, lost = 0, pend = 0;
+        for (Bet b : bets) {
+            switch (b.getResult()) {
+                case WON -> won++;
+                case LOST -> lost++;
+                case PENDING -> pend++;
+            }
+        }
         long total = bets.size();
         int winRate = total > 0 ? (int) (won * 100 / total) : 0;
 

@@ -28,6 +28,7 @@ public class PlacesPanel extends JPanel {
     private JTextField searchField;
     private JComboBox<String> categoryFilter;
     private boolean showFavOnly = false;
+    private javax.swing.Timer searchDebounce;
 
     static final String[] CATEGORIES = { "Todas", "Cafeteria", "Deportes", "Actividades", "Biblioteca", "Otro" };
 
@@ -104,17 +105,9 @@ public class PlacesPanel extends JPanel {
             }
         });
         searchField.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
-            public void insertUpdate(javax.swing.event.DocumentEvent e) {
-                refreshCards();
-            }
-
-            public void removeUpdate(javax.swing.event.DocumentEvent e) {
-                refreshCards();
-            }
-
-            public void changedUpdate(javax.swing.event.DocumentEvent e) {
-                refreshCards();
-            }
+            public void insertUpdate(javax.swing.event.DocumentEvent e) { debounceRefresh(); }
+            public void removeUpdate(javax.swing.event.DocumentEvent e) { debounceRefresh(); }
+            public void changedUpdate(javax.swing.event.DocumentEvent e) { debounceRefresh(); }
         });
 
         categoryFilter = new JComboBox<>(CATEGORIES);
@@ -160,6 +153,13 @@ public class PlacesPanel extends JPanel {
         add(scroll, BorderLayout.CENTER);
     }
 
+    private void debounceRefresh() {
+        if (searchDebounce != null && searchDebounce.isRunning()) searchDebounce.stop();
+        searchDebounce = new javax.swing.Timer(200, e -> refreshCards());
+        searchDebounce.setRepeats(false);
+        searchDebounce.start();
+    }
+
     /** Reconstruye la lista de tarjetas de lugares aplicando filtros activos. */
     private void refreshCards() {
         cardsContainer.removeAll();
@@ -200,11 +200,12 @@ public class PlacesPanel extends JPanel {
         JPanel card = new JPanel(new BorderLayout(16, 0)) {
             @Override
             protected void paintComponent(Graphics g) {
+                boolean hovered = Boolean.TRUE.equals(getClientProperty("hovered"));
                 Graphics2D g2 = (Graphics2D) g.create();
                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-                // Sombra
-                g2.setColor(new Color(0, 0, 0, 10));
-                g2.fillRoundRect(2, 3, getWidth() - 2, getHeight() - 2, 14, 14);
+                // Sombra (mas intensa al pasar el mouse)
+                g2.setColor(new Color(0, 0, 0, hovered ? 22 : 10));
+                g2.fillRoundRect(2, hovered ? 4 : 3, getWidth() - 2, getHeight() - 2, 14, 14);
                 // Fondo
                 g2.setColor(tm.getSurface());
                 g2.fillRoundRect(0, 0, getWidth() - 2, getHeight() - 2, 14, 14);
@@ -219,6 +220,16 @@ public class PlacesPanel extends JPanel {
         card.setOpaque(false);
         card.setBorder(new EmptyBorder(18, 22, 18, 18));
         card.setMaximumSize(new Dimension(Integer.MAX_VALUE, 90));
+        card.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override public void mouseEntered(java.awt.event.MouseEvent e) {
+                card.putClientProperty("hovered", Boolean.TRUE);
+                card.repaint();
+            }
+            @Override public void mouseExited(java.awt.event.MouseEvent e) {
+                card.putClientProperty("hovered", Boolean.FALSE);
+                card.repaint();
+            }
+        });
 
         // Info del lugar
         JPanel info = new JPanel();

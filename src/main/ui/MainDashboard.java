@@ -274,22 +274,9 @@ public class MainDashboard extends JFrame {
         grid.add(card("APUNAB Faltantes", fmt(needed), "para graduarse (meta 100K)", new Color(0xE7, 0x4C, 0x3C)));
         grid.add(card("Lugares Activos", String.valueOf(places), "lugares registrados", new Color(0x16, 0xA0, 0x85)));
 
-        // Accesos rapidos
-        JPanel actions = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 0));
-        actions.setOpaque(false);
-        actions.setBorder(new EmptyBorder(18, 0, 0, 0));
-        // actions.add(roundedButton("Ver Lugares", C_ORANGE_BG, C_ORANGE, F_PLAIN_SM));
-        // actions.add(roundedButton("Historial de APUNAB", new Color(0xEE, 0xEE, 0xEE),
-        // tm.getText(), F_PLAIN_SM));
-        // actions.add(roundedButton("Estadisticas", new Color(0xEE, 0xEE, 0xEE),
-        // tm.getText(), F_PLAIN_SM));
-        // actions.add(roundedButton("Registrarse en Lugar", new Color(0xEE, 0xEE,
-        // 0xEE), tm.getText(), F_PLAIN_SM));
-
         JPanel center = new JPanel(new BorderLayout());
         center.setOpaque(false);
         center.add(grid, BorderLayout.CENTER);
-        center.add(actions, BorderLayout.SOUTH);
 
         panel.add(header, BorderLayout.NORTH);
         panel.add(center, BorderLayout.CENTER);
@@ -347,7 +334,7 @@ public class MainDashboard extends JFrame {
         chip.setBorder(new EmptyBorder(12, 16, 12, 16));
 
         long bal = dm.getBalance(student.getCode());
-        long needed = dm.getApunabNeeded(student.getCode());
+        long needed = DataManager.GRADUATION_GOAL - bal;
         int pct = (int) (bal * 100 / DataManager.GRADUATION_GOAL);
 
         JLabel t1 = new JLabel("Mis APUNAB");
