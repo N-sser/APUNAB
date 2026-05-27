@@ -109,13 +109,24 @@ public class DataManager {
         if (students.containsKey(code))
             return false;
         String hash = Security.hashPassword(code, rawPassword);
-        students.put(code, new Student(code, email, name, "1st Semester", 0L, hash));
+        students.put(code, new Student(code, email, name, "1st Semester", 0L, hash, ""));
         saveAll();
         return true;
     }
 
     public Student findByCode(String code) {
         return students.get(code);
+    }
+
+    /** Actualiza email y telefono del estudiante y persiste. */
+    public boolean updateStudentContact(String code, String email, String phone) {
+        Student s = students.get(code);
+        if (s == null)
+            return false;
+        s.setEmail(email);
+        s.setPhone(phone);
+        saveAll();
+        return true;
     }
 
     // ═══════════════════════════════════════════════════════════════════════════
@@ -286,7 +297,8 @@ public class DataManager {
 
     public void toggleFavorite(String studentCode, String placeId) {
         Set<String> fav = favorites.computeIfAbsent(studentCode, k -> new HashSet<>());
-        if (!fav.remove(placeId)) fav.add(placeId);
+        if (!fav.remove(placeId))
+            fav.add(placeId);
         saveFavorites();
     }
 
@@ -331,7 +343,8 @@ public class DataManager {
                         s.getName(),
                         s.getSemester(),
                         Long.toString(s.getApunabBalance()),
-                        s.getPasswordHash()));
+                        s.getPasswordHash(),
+                        s.getPhone()));
                 w.newLine();
             }
         } catch (IOException e) {
@@ -377,7 +390,8 @@ public class DataManager {
     private void saveFavorites() {
         try (BufferedWriter w = Files.newBufferedWriter(favoritesFile())) {
             for (Map.Entry<String, Set<String>> e : favorites.entrySet()) {
-                if (e.getValue().isEmpty()) continue;
+                if (e.getValue().isEmpty())
+                    continue;
                 w.write(e.getKey() + D + String.join(",", e.getValue()));
                 w.newLine();
             }
@@ -421,9 +435,10 @@ public class DataManager {
                 String name = parts[2];
                 String semester = parts[3];
                 long balance = Long.parseLong(parts[4]);
-                String hash = parts[5];
+                String hash = parts.length > 5 ? parts[5] : "";
+                String phone = parts.length > 6 ? parts[6] : "";
 
-                students.put(code, new Student(code, email, name, semester, balance, hash));
+                students.put(code, new Student(code, email, name, semester, balance, hash, phone));
             }
         } catch (IOException e) {
             System.err.println("Error cargando estudiantes: " + e.getMessage());
@@ -458,21 +473,23 @@ public class DataManager {
         try {
             for (String line : Files.readAllLines(placesFile())) {
                 line = line.trim();
-                if (line.isEmpty()) continue;
+                if (line.isEmpty())
+                    continue;
                 String[] parts = line.split("\\|", -1);
-                if (parts.length < 4) continue;
+                if (parts.length < 4)
+                    continue;
 
-                String id          = parts[0];
-                String name        = parts[1];
+                String id = parts[0];
+                String name = parts[1];
                 String description = parts[2];
                 // Backward compat: old format has 4 fields (no category)
                 String category;
                 String enrolledRaw;
                 if (parts.length >= 5) {
-                    category    = parts[3];
+                    category = parts[3];
                     enrolledRaw = parts[4];
                 } else {
-                    category    = "Otro";
+                    category = "Otro";
                     enrolledRaw = parts[3];
                 }
 
@@ -481,7 +498,8 @@ public class DataManager {
                 if (!enrolledRaw.isEmpty()) {
                     for (String code : enrolledRaw.split(",", -1)) {
                         code = code.trim();
-                        if (!code.isEmpty()) place.enroll(code);
+                        if (!code.isEmpty())
+                            place.enroll(code);
                     }
                 }
 
@@ -493,17 +511,21 @@ public class DataManager {
     }
 
     private void loadFavorites() {
-        if (!Files.exists(favoritesFile())) return;
+        if (!Files.exists(favoritesFile()))
+            return;
         try {
             for (String line : Files.readAllLines(favoritesFile())) {
                 line = line.trim();
-                if (line.isEmpty()) continue;
+                if (line.isEmpty())
+                    continue;
                 String[] parts = line.split("\\|", -1);
-                if (parts.length < 2) continue;
+                if (parts.length < 2)
+                    continue;
                 Set<String> fav = new HashSet<>();
                 for (String id : parts[1].split(",", -1)) {
                     id = id.trim();
-                    if (!id.isEmpty()) fav.add(id);
+                    if (!id.isEmpty())
+                        fav.add(id);
                 }
                 favorites.put(parts[0], fav);
             }
@@ -523,13 +545,14 @@ public class DataManager {
     private void seedData() {
         String code = "U00123456";
         String hash = Security.hashPassword(code, "1234");
-        students.put(code, new Student(code, "jperez123", "Juan Perez Gomez", "1st Semester", 0L, hash));
+        students.put(code,
+                new Student(code, "jperez123@unab.edu.co", "Juan Perez Gomez", "1st Semester", 0L, hash, ""));
 
-        Place p1 = new Place("P001", "Cafeteria L",      "Cafeteria del bloque L",    "Cafeteria");
-        Place p2 = new Place("P002", "Cafeteria CSU",    "Centro Social Universitario","Cafeteria");
-        Place p3 = new Place("P003", "Cafeteria Bosque", "Cafeteria zona del Bosque",  "Cafeteria");
-        Place p4 = new Place("P004", "Cafeteria Casona", "Cafeteria La Casona",        "Cafeteria");
-        Place p5 = new Place("P005", "Banu",             "Punto Banu campus principal","Actividades");
+        Place p1 = new Place("P001", "Cafeteria L", "Cafeteria del bloque L", "Cafeteria");
+        Place p2 = new Place("P002", "Cafeteria CSU", "Centro Social Universitario", "Cafeteria");
+        Place p3 = new Place("P003", "Cafeteria Bosque", "Cafeteria zona del Bosque", "Cafeteria");
+        Place p4 = new Place("P004", "Cafeteria Casona", "Cafeteria La Casona", "Cafeteria");
+        Place p5 = new Place("P005", "Banu", "Punto Banu campus principal", "Actividades");
 
         p1.enroll(code);
         p3.enroll(code);

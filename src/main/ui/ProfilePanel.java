@@ -17,6 +17,10 @@ public class ProfilePanel extends JPanel {
     private final Student student;
     private final DataManager dm = DataManager.getInstance();
 
+    // Campos editables — referenciados desde el boton Actualizar
+    private JTextField fieldEmail;
+    private JTextField fieldPhone;
+
     // Reutilizar paleta del dashboard
     static final Color C_ORANGE = new Color(0xFF, 0x8C, 0x00);
     static final Color C_ORANGE_BG = new Color(0xFF, 0x8C, 0x00, 30);
@@ -42,8 +46,20 @@ public class ProfilePanel extends JPanel {
         content.add(buildHeader());
         content.add(Box.createVerticalStrut(24));
         content.add(buildInfoGrid());
+        content.add(Box.createVerticalStrut(14));
+        content.add(buildActualizarButton());
 
         add(content, BorderLayout.NORTH);
+    }
+
+    private void rebuild() {
+        removeAll();
+        setBackground(C_BG);
+        setLayout(new BorderLayout());
+        setBorder(new EmptyBorder(28, 28, 28, 28));
+        buildUI();
+        revalidate();
+        repaint();
     }
 
     // ── Encabezado con avatar, nombre y badge ─────────────────────────────────
@@ -159,18 +175,114 @@ public class ProfilePanel extends JPanel {
         grid.setOpaque(false);
         grid.setMaximumSize(new Dimension(Integer.MAX_VALUE, 200));
 
+        fieldEmail = new JTextField(student.getEmail());
+        fieldPhone = new JTextField(student.getPhone().isEmpty() ? "" : student.getPhone());
+
         grid.add(infoCard("Codigo de estudiante", student.getCode()));
         grid.add(infoCard("Semestre", student.getSemester()));
-        grid.add(infoCard("Correo institucional", student.getEmail().toLowerCase() + "@unab.edu.co"));
+        grid.add(editableInfoCard("Correo institucional", fieldEmail));
+        grid.add(editableInfoCard("Telefono", fieldPhone));
         grid.add(infoCard("Carrera", "Ingenieria de Sistemas"));
-        grid.add(infoCard("Facultad", "Ingenieria"));
         grid.add(infoCard("Lugares activos", dm.getEnrolledPlaces(student.getCode()).size() + " registrados"));
 
         return grid;
     }
 
-    /** Tarjeta individual de informacion con titulo y valor. */
+    /** Tarjeta de solo lectura. */
     private JPanel infoCard(String title, String value) {
+        JPanel card = roundedCard();
+        card.setBorder(new EmptyBorder(16, 18, 16, 18));
+
+        JLabel lTitle = mutedLabel(title);
+        JLabel lValue = new JLabel(value);
+        lValue.setFont(new Font("Dialog", Font.BOLD, 14));
+        lValue.setForeground(C_ORANGE);
+        lValue.setAlignmentX(LEFT_ALIGNMENT);
+
+        card.add(lTitle);
+        card.add(Box.createVerticalStrut(6));
+        card.add(lValue);
+        return card;
+    }
+
+    /** Tarjeta editable: el valor es un JTextField que parece un label. */
+    private JPanel editableInfoCard(String title, JTextField field) {
+        JPanel card = roundedCard();
+        card.setBorder(new EmptyBorder(16, 18, 10, 18));
+
+        JLabel lTitle = mutedLabel(title);
+
+        // Estilo del campo para que luzca como el label naranja
+        field.setFont(new Font("Dialog", Font.BOLD, 14));
+        field.setForeground(C_ORANGE);
+        field.setBackground(C_WHITE);
+        field.setCaretColor(C_ORANGE);
+        field.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, C_BORDER));
+        field.setMaximumSize(new Dimension(Integer.MAX_VALUE, 28));
+        field.setAlignmentX(LEFT_ALIGNMENT);
+
+        // Al enfocar, subrayado naranja; al perder foco, vuelve a gris
+        field.addFocusListener(new java.awt.event.FocusAdapter() {
+            @Override
+            public void focusGained(java.awt.event.FocusEvent e) {
+                field.setBorder(BorderFactory.createMatteBorder(0, 0, 2, 0, C_ORANGE));
+            }
+
+            @Override
+            public void focusLost(java.awt.event.FocusEvent e) {
+                field.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, C_BORDER));
+            }
+        });
+
+        card.add(lTitle);
+        card.add(Box.createVerticalStrut(6));
+        card.add(field);
+        return card;
+    }
+
+    /** Boton Actualizar alineado a la derecha, bajo el grid. */
+    private JPanel buildActualizarButton() {
+        JButton btn = new JButton("Actualizar") {
+            @Override
+            protected void paintComponent(Graphics g) {
+                Graphics2D g2 = (Graphics2D) g.create();
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                g2.setColor(getModel().isRollover() ? C_ORANGE.darker() : C_ORANGE);
+                g2.fillRoundRect(0, 0, getWidth(), getHeight(), 10, 10);
+                g2.dispose();
+                super.paintComponent(g);
+            }
+        };
+        btn.setFont(new Font("Dialog", Font.BOLD, 13));
+        btn.setForeground(Color.WHITE);
+        btn.setContentAreaFilled(false);
+        btn.setBorderPainted(false);
+        btn.setFocusPainted(false);
+        btn.setBorder(new EmptyBorder(10, 24, 10, 24));
+        btn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+
+        btn.addActionListener(e -> {
+            String email = fieldEmail.getText().trim();
+            String phone = fieldPhone.getText().trim();
+            if (email.isEmpty()) {
+                JOptionPane.showMessageDialog(this, "El correo no puede estar vacio.", "Error",
+                        JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+            dm.updateStudentContact(student.getCode(), email, phone);
+            rebuild();
+        });
+
+        JPanel row = new JPanel(new FlowLayout(FlowLayout.RIGHT, 0, 0));
+        row.setOpaque(false);
+        row.setMaximumSize(new Dimension(Integer.MAX_VALUE, 44));
+        row.add(btn);
+        return row;
+    }
+
+    // ── Helpers ──────────────────────────────────────────────────────────────
+
+    private JPanel roundedCard() {
         JPanel card = new JPanel() {
             @Override
             protected void paintComponent(Graphics g) {
@@ -185,21 +297,14 @@ public class ProfilePanel extends JPanel {
         };
         card.setLayout(new BoxLayout(card, BoxLayout.Y_AXIS));
         card.setOpaque(false);
-        card.setBorder(new EmptyBorder(16, 18, 16, 18));
-
-        JLabel lTitle = new JLabel(title);
-        lTitle.setFont(new Font("Dialog", Font.PLAIN, 11));
-        lTitle.setForeground(C_MUTED);
-        lTitle.setAlignmentX(LEFT_ALIGNMENT);
-
-        JLabel lValue = new JLabel(value);
-        lValue.setFont(new Font("Dialog", Font.BOLD, 14));
-        lValue.setForeground(C_ORANGE);
-        lValue.setAlignmentX(LEFT_ALIGNMENT);
-
-        card.add(lTitle);
-        card.add(Box.createVerticalStrut(6));
-        card.add(lValue);
         return card;
+    }
+
+    private JLabel mutedLabel(String text) {
+        JLabel lbl = new JLabel(text);
+        lbl.setFont(new Font("Dialog", Font.PLAIN, 11));
+        lbl.setForeground(C_MUTED);
+        lbl.setAlignmentX(LEFT_ALIGNMENT);
+        return lbl;
     }
 }
