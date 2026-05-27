@@ -49,13 +49,6 @@ public class SettingsPanel extends JPanel {
         content.add(buildThemeSection());
         content.add(Box.createVerticalStrut(24));
 
-        // ── Seguridad ─────────────────────────────────────────────────────────
-        content.add(sectionTitle("Seguridad"));
-        content.add(Box.createVerticalStrut(8));
-        content.add(infoRow("Cifrado de contrasena", "SHA-256 con sal por usuario"));
-        content.add(infoRow("Almacenamiento", "Hash irreversible — contrasena nunca en texto plano"));
-        content.add(Box.createVerticalStrut(24));
-
         // ── Aplicacion ────────────────────────────────────────────────────────
         content.add(sectionTitle("Aplicacion"));
         content.add(Box.createVerticalStrut(8));
@@ -64,14 +57,6 @@ public class SettingsPanel extends JPanel {
         content.add(infoRow("Sistema", System.getProperty("os.name") + " " + System.getProperty("os.version")));
         content.add(infoRow("Datos guardados en", getDataPath()));
         content.add(Box.createVerticalStrut(24));
-
-        // ── Cuenta ────────────────────────────────────────────────────────────
-        content.add(sectionTitle("Cuenta"));
-        content.add(Box.createVerticalStrut(8));
-        content.add(infoRow("Estudiante", student.getName()));
-        content.add(infoRow("Codigo", student.getCode()));
-        content.add(infoRow("Semestre", student.getSemester()));
-        content.add(Box.createVerticalStrut(16));
 
         JButton btnReset = styledButton("Borrar todos los datos", new Color(0xEE, 0xEE, 0xEE), C_RED);
         btnReset.setAlignmentX(LEFT_ALIGNMENT);
