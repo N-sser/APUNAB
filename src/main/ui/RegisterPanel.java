@@ -119,6 +119,8 @@ public class RegisterPanel extends JFrame {
         field.setFont(new Font("Dialog", Font.PLAIN, 13));
         field.setMaximumSize(new Dimension(Integer.MAX_VALUE, 44));
         field.setAlignmentX(CENTER_ALIGNMENT);
+        field.setBackground(tm.getSurface());
+        field.setCaretColor(tm.getText());
         field.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(tm.getBorder(), 1, true),
                 new EmptyBorder(10, 14, 10, 14)));

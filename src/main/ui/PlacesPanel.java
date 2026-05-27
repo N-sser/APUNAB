@@ -80,6 +80,8 @@ public class PlacesPanel extends JPanel {
 
         searchField = new JTextField(18);
         searchField.setFont(new Font("Dialog", Font.PLAIN, 13));
+        searchField.setBackground(tm.getSurface());
+        searchField.setCaretColor(tm.getText());
         searchField.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(tm.getBorder(), 1, true),
                 new EmptyBorder(6, 10, 6, 10)));
@@ -114,7 +116,7 @@ public class PlacesPanel extends JPanel {
         categoryFilter.setFont(new Font("Dialog", Font.PLAIN, 12));
         categoryFilter.addActionListener(e -> refreshCards());
 
-        JButton btnFav = styledButton("Favoritos", new Color(0xEE, 0xEE, 0xEE), tm.getMuted());
+        JButton btnFav = styledButton("Favoritos", tm.getBorder(), tm.getMuted());
         btnFav.addActionListener(e -> {
             showFavOnly = !showFavOnly;
             if (showFavOnly) {
@@ -266,7 +268,7 @@ public class PlacesPanel extends JPanel {
 
         // Estrella de favorito
         boolean isFav = dm.isFavorite(student.getCode(), place.getId());
-        JButton btnStar = styledButton(isFav ? "★" : "☆", new Color(0xEE, 0xEE, 0xEE),
+        JButton btnStar = styledButton(isFav ? "★" : "☆", tm.getBorder(),
                 isFav ? new Color(0xFF, 0xB3, 0x00) : tm.getMuted());
         btnStar.addActionListener(e -> {
             dm.toggleFavorite(student.getCode(), place.getId());
@@ -274,7 +276,7 @@ public class PlacesPanel extends JPanel {
         });
 
         if (enrolled) {
-            JButton btnLeave = styledButton("Darse de baja", new Color(0xEE, 0xEE, 0xEE), C_RED);
+            JButton btnLeave = styledButton("Darse de baja", tm.getBorder(), C_RED);
             btnLeave.addActionListener(e -> {
                 dm.leavePlace(student.getCode(), place.getId());
                 refreshCards();
@@ -293,7 +295,7 @@ public class PlacesPanel extends JPanel {
             actions.add(btnJoin);
         }
 
-        JButton btnDel = styledButton("Eliminar", new Color(0xEE, 0xEE, 0xEE), C_RED);
+        JButton btnDel = styledButton("Eliminar", tm.getBorder(), C_RED);
         btnDel.addActionListener(e -> {
             int r = JOptionPane.showConfirmDialog(this,
                     "Eliminar " + place.getName() + "?", "Confirmar",

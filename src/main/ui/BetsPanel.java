@@ -33,6 +33,10 @@ public class BetsPanel extends JPanel {
     static final Color C_GREEN = new Color(0x27, 0xAE, 0x60);
     static final Color C_RED = new Color(0xE7, 0x4C, 0x3C);
 
+    private final Color altRow = tm.isDark()
+            ? new Color(0x26, 0x26, 0x36)
+            : new Color(0xF7, 0xF7, 0xF7);
+
     // Columnas de la tabla
     private static final String[] COLUMNS = {
             "ID", "Lugar", "Monto", "Fecha", "Resultado"
@@ -82,9 +86,6 @@ public class BetsPanel extends JPanel {
                 return false;
             }
         };
-        Color altRow = tm.isDark()
-                ? new Color(0x26, 0x26, 0x36)
-                : new Color(0xF7, 0xF7, 0xF7);
         table = new JTable(tableModel) {
             @Override
             public Component prepareRenderer(javax.swing.table.TableCellRenderer renderer, int row, int col) {
@@ -98,7 +99,7 @@ public class BetsPanel extends JPanel {
         refreshTable();
 
         JScrollPane scroll = new JScrollPane(table);
-        scroll.setBorder(BorderFactory.createLineBorder(new Color(0xE8, 0xE8, 0xE8)));
+        scroll.setBorder(BorderFactory.createLineBorder(tm.getBorder()));
         scroll.getViewport().setBackground(tm.getSurface());
 
         // Botones de accion bajo la tabla
@@ -106,13 +107,13 @@ public class BetsPanel extends JPanel {
         actions.setOpaque(false);
         actions.setBorder(new EmptyBorder(12, 0, 0, 0));
 
-        JButton btnEdit = styledButton("Editar", new Color(0xEE, 0xEE, 0xEE), tm.getText());
+        JButton btnEdit = styledButton("Editar", tm.getBorder(), tm.getText());
         btnEdit.addActionListener(e -> editSelected());
 
-        JButton btnDel = styledButton("Eliminar", new Color(0xEE, 0xEE, 0xEE), C_RED);
+        JButton btnDel = styledButton("Eliminar", tm.getBorder(), C_RED);
         btnDel.addActionListener(e -> deleteSelected());
 
-        JButton btnExport = styledButton("Exportar CSV", new Color(0xEE, 0xEE, 0xEE), new Color(0x27, 0xAE, 0x60));
+        JButton btnExport = styledButton("Exportar CSV", tm.getBorder(), new Color(0x27, 0xAE, 0x60));
         btnExport.addActionListener(e -> exportCsv());
 
         actions.add(btnEdit);
@@ -136,7 +137,9 @@ public class BetsPanel extends JPanel {
         table.getTableHeader().setFont(new Font("Dialog", Font.BOLD, 12));
         table.getTableHeader().setBackground(tm.getSurface());
         table.getTableHeader().setForeground(tm.getMuted());
-        table.getTableHeader().setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, new Color(0xE8, 0xE8, 0xE8)));
+        table.getTableHeader().setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, tm.getBorder()));
+        table.setBackground(tm.getSurface());
+        table.setForeground(tm.getText());
         table.setFillsViewportHeight(true);
 
         // Renderer personalizado para colorear el resultado
@@ -145,6 +148,8 @@ public class BetsPanel extends JPanel {
             public Component getTableCellRendererComponent(
                     JTable t, Object val, boolean sel, boolean focus, int row, int col) {
                 super.getTableCellRendererComponent(t, val, sel, focus, row, col);
+                if (!sel)
+                    setBackground(row % 2 == 0 ? tm.getSurface() : altRow);
                 String result = val.toString();
                 if (result.equals("WON"))
                     setForeground(C_GREEN);
@@ -163,6 +168,8 @@ public class BetsPanel extends JPanel {
             public Component getTableCellRendererComponent(
                     JTable t, Object val, boolean sel, boolean focus, int row, int col) {
                 super.getTableCellRendererComponent(t, val, sel, focus, row, col);
+                if (!sel)
+                    setBackground(row % 2 == 0 ? tm.getSurface() : altRow);
                 String text = val.toString();
                 if (text.startsWith("+"))
                     setForeground(C_GREEN);
