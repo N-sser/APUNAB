@@ -1,0 +1,21 @@
+# General compiled files
+*.exe
+*.dll
+*.so
+*.o
+*.class
+*.pyc
+*.pyo
+
+# Build directories
+build/
+dist/
+target/
+out/
+bin/
+obj/
+
+# Package files (often compiled)
+*.jar
+*.war
+*.egg-info/   
