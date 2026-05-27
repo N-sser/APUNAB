@@ -28,16 +28,16 @@ public class BetsPanel extends JPanel {
     private JTable table;
 
     static final Color C_ORANGE = new Color(0xFF, 0x8C, 0x00);
-    static final Color C_BG     = new Color(0xF5, 0xF5, 0xF5);
-    static final Color C_WHITE  = Color.WHITE;
-    static final Color C_TEXT   = new Color(0x1A, 0x1A, 0x1A);
-    static final Color C_MUTED  = new Color(0x88, 0x88, 0x88);
-    static final Color C_GREEN  = new Color(0x27, 0xAE, 0x60);
-    static final Color C_RED    = new Color(0xE7, 0x4C, 0x3C);
+    static final Color C_BG = new Color(0xF5, 0xF5, 0xF5);
+    static final Color C_WHITE = Color.WHITE;
+    static final Color C_TEXT = new Color(0x1A, 0x1A, 0x1A);
+    static final Color C_MUTED = new Color(0x88, 0x88, 0x88);
+    static final Color C_GREEN = new Color(0x27, 0xAE, 0x60);
+    static final Color C_RED = new Color(0xE7, 0x4C, 0x3C);
 
     // Columnas de la tabla
     private static final String[] COLUMNS = {
-        "ID", "Lugar", "Monto", "Fecha", "Resultado"
+            "ID", "Lugar", "Monto", "Fecha", "Resultado"
     };
 
     public BetsPanel(Student student) {
@@ -79,7 +79,10 @@ public class BetsPanel extends JPanel {
 
         // Tabla
         tableModel = new DefaultTableModel(COLUMNS, 0) {
-            @Override public boolean isCellEditable(int row, int col) { return false; }
+            @Override
+            public boolean isCellEditable(int row, int col) {
+                return false;
+            }
         };
         table = new JTable(tableModel);
         styleTable();
@@ -100,8 +103,12 @@ public class BetsPanel extends JPanel {
         JButton btnDel = styledButton("Eliminar", new Color(0xEE, 0xEE, 0xEE), C_RED);
         btnDel.addActionListener(e -> deleteSelected());
 
+        JButton btnExport = styledButton("Exportar CSV", new Color(0xEE, 0xEE, 0xEE), new Color(0x27, 0xAE, 0x60));
+        btnExport.addActionListener(e -> exportCsv());
+
         actions.add(btnEdit);
         actions.add(btnDel);
+        actions.add(btnExport);
 
         add(header, BorderLayout.NORTH);
         add(scroll, BorderLayout.CENTER);
@@ -125,13 +132,17 @@ public class BetsPanel extends JPanel {
 
         // Renderer personalizado para colorear el resultado
         table.getColumnModel().getColumn(4).setCellRenderer(new DefaultTableCellRenderer() {
-            @Override public Component getTableCellRendererComponent(
+            @Override
+            public Component getTableCellRendererComponent(
                     JTable t, Object val, boolean sel, boolean focus, int row, int col) {
                 super.getTableCellRendererComponent(t, val, sel, focus, row, col);
                 String result = val.toString();
-                if      (result.equals("WON"))     setForeground(C_GREEN);
-                else if (result.equals("LOST"))    setForeground(C_RED);
-                else                               setForeground(C_ORANGE);
+                if (result.equals("WON"))
+                    setForeground(C_GREEN);
+                else if (result.equals("LOST"))
+                    setForeground(C_RED);
+                else
+                    setForeground(C_ORANGE);
                 setFont(new Font("Dialog", Font.BOLD, 12));
                 return this;
             }
@@ -139,13 +150,17 @@ public class BetsPanel extends JPanel {
 
         // Renderer para montos (color segun signo)
         table.getColumnModel().getColumn(2).setCellRenderer(new DefaultTableCellRenderer() {
-            @Override public Component getTableCellRendererComponent(
+            @Override
+            public Component getTableCellRendererComponent(
                     JTable t, Object val, boolean sel, boolean focus, int row, int col) {
                 super.getTableCellRendererComponent(t, val, sel, focus, row, col);
                 String text = val.toString();
-                if      (text.startsWith("+")) setForeground(C_GREEN);
-                else if (text.startsWith("-")) setForeground(C_RED);
-                else                           setForeground(C_TEXT);
+                if (text.startsWith("+"))
+                    setForeground(C_GREEN);
+                else if (text.startsWith("-"))
+                    setForeground(C_RED);
+                else
+                    setForeground(C_TEXT);
                 setFont(new Font("Dialog", Font.BOLD, 13));
                 return this;
             }
@@ -166,12 +181,12 @@ public class BetsPanel extends JPanel {
             long amt = b.getAmount();
             String amtStr = (amt >= 0 ? "+" : "") + String.format("%,d", amt);
 
-            tableModel.addRow(new Object[]{
-                b.getId(),
-                placeName,
-                amtStr,
-                b.getDate().toString(),
-                b.getResult().name()
+            tableModel.addRow(new Object[] {
+                    b.getId(),
+                    placeName,
+                    amtStr,
+                    b.getDate().toString(),
+                    b.getResult().name()
             });
         }
     }
@@ -188,20 +203,21 @@ public class BetsPanel extends JPanel {
         String[] placeNames = places.stream().map(Place::getName).toArray(String[]::new);
         JComboBox<String> comboPlace = new JComboBox<>(placeNames);
         JTextField fieldAmount = new JTextField();
-        JComboBox<String> comboResult = new JComboBox<>(new String[]{"WON", "LOST", "PENDING"});
+        JComboBox<String> comboResult = new JComboBox<>(new String[] { "WON", "LOST", "PENDING" });
         JTextField fieldDate = new JTextField(LocalDate.now().toString());
 
         Object[] form = {
-            "Lugar:",     comboPlace,
-            "Monto:",     fieldAmount,
-            "Resultado:", comboResult,
-            "Fecha (YYYY-MM-DD):", fieldDate
+                "Lugar:", comboPlace,
+                "Monto:", fieldAmount,
+                "Resultado:", comboResult,
+                "Fecha (YYYY-MM-DD):", fieldDate
         };
 
         int r = JOptionPane.showConfirmDialog(this, form,
-            "Registrar APUNAB", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+                "Registrar APUNAB", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
 
-        if (r != JOptionPane.OK_OPTION) return;
+        if (r != JOptionPane.OK_OPTION)
+            return;
 
         try {
             Place selected = places.get(comboPlace.getSelectedIndex());
@@ -210,10 +226,11 @@ public class BetsPanel extends JPanel {
             LocalDate date = LocalDate.parse(fieldDate.getText().trim());
 
             // Si perdio, monto negativo
-            if (result == Result.LOST && amount > 0) amount = -amount;
+            if (result == Result.LOST && amount > 0)
+                amount = -amount;
 
             dm.addBet(new Bet(dm.nextBetId(), student.getCode(), selected.getId(),
-                              amount, date, result));
+                    amount, date, result));
             refreshTable();
         } catch (NumberFormatException ex) {
             JOptionPane.showMessageDialog(this, "El monto debe ser un numero.");
@@ -233,26 +250,29 @@ public class BetsPanel extends JPanel {
 
         String betId = (String) tableModel.getValueAt(row, 0);
         Bet bet = dm.findBetById(betId);
-        if (bet == null) return;
+        if (bet == null)
+            return;
 
         JTextField fieldAmount = new JTextField(String.valueOf(Math.abs(bet.getAmount())));
-        JComboBox<String> comboResult = new JComboBox<>(new String[]{"WON", "LOST", "PENDING"});
+        JComboBox<String> comboResult = new JComboBox<>(new String[] { "WON", "LOST", "PENDING" });
         comboResult.setSelectedItem(bet.getResult().name());
 
         Object[] form = {
-            "Monto:",     fieldAmount,
-            "Resultado:", comboResult
+                "Monto:", fieldAmount,
+                "Resultado:", comboResult
         };
 
         int r = JOptionPane.showConfirmDialog(this, form,
-            "Editar apuesta " + betId, JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+                "Editar apuesta " + betId, JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
 
-        if (r != JOptionPane.OK_OPTION) return;
+        if (r != JOptionPane.OK_OPTION)
+            return;
 
         try {
             long amount = Long.parseLong(fieldAmount.getText().trim());
             Result result = Result.valueOf((String) comboResult.getSelectedItem());
-            if (result == Result.LOST && amount > 0) amount = -amount;
+            if (result == Result.LOST && amount > 0)
+                amount = -amount;
 
             bet.setAmount(amount);
             bet.setResult(result);
@@ -274,8 +294,8 @@ public class BetsPanel extends JPanel {
 
         String betId = (String) tableModel.getValueAt(row, 0);
         int r = JOptionPane.showConfirmDialog(this,
-            "Eliminar apuesta " + betId + "?", "Confirmar",
-            JOptionPane.YES_NO_OPTION);
+                "Eliminar apuesta " + betId + "?", "Confirmar",
+                JOptionPane.YES_NO_OPTION);
 
         if (r == JOptionPane.YES_OPTION) {
             dm.deleteBet(betId);
@@ -283,11 +303,67 @@ public class BetsPanel extends JPanel {
         }
     }
 
+    // ── Exportar CSV ────────────────────────────────────────────────────────
+
+    private void exportCsv() {
+        List<Bet> bets = dm.getBetsByStudent(student.getCode());
+        if (bets.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "No hay apuestas para exportar.");
+            return;
+        }
+
+        JFileChooser chooser = new JFileChooser();
+        chooser.setDialogTitle("Guardar reporte CSV");
+        chooser.setSelectedFile(new java.io.File("apunab_reporte_" + student.getCode() + ".csv"));
+
+        if (chooser.showSaveDialog(this) != JFileChooser.APPROVE_OPTION)
+            return;
+
+        java.io.File file = chooser.getSelectedFile();
+        // Agregar extension si el usuario no la puso
+        if (!file.getName().toLowerCase().endsWith(".csv"))
+            file = new java.io.File(file.getAbsolutePath() + ".csv");
+
+        try (java.io.PrintWriter pw = new java.io.PrintWriter(
+                new java.io.OutputStreamWriter(
+                        new java.io.FileOutputStream(file), java.nio.charset.StandardCharsets.UTF_8))) {
+
+            // Cabecera
+            pw.println("ID,Lugar,Monto,Fecha,Resultado");
+
+            for (int i = bets.size() - 1; i >= 0; i--) {
+                Bet b = bets.get(i);
+                Place place = dm.findPlaceById(b.getPlaceId());
+                String placeName = (place != null) ? place.getName() : b.getPlaceId();
+                // Escapar comas en el nombre del lugar
+                if (placeName.contains(","))
+                    placeName = "\"" + placeName + "\"";
+
+                pw.printf("%s,%s,%d,%s,%s%n",
+                        b.getId(),
+                        placeName,
+                        b.getAmount(),
+                        b.getDate().toString(),
+                        b.getResult().name());
+            }
+
+            JOptionPane.showMessageDialog(this,
+                    "Reporte exportado:\n" + file.getAbsolutePath(),
+                    "Exportacion exitosa", JOptionPane.INFORMATION_MESSAGE);
+
+        } catch (java.io.IOException ex) {
+            JOptionPane.showMessageDialog(this,
+                    "Error al guardar el archivo:\n" + ex.getMessage(),
+                    "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
     // ── Boton reutilizable ──────────────────────────────────────────────────
 
     private JButton styledButton(String text, Color bg, Color fg) {
         JButton btn = new JButton(text) {
-            @Override protected void paintComponent(Graphics g) {
+            @Override
+            protected void paintComponent(Graphics g) {
                 Graphics2D g2 = (Graphics2D) g.create();
                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
                 g2.setColor(getModel().isRollover() ? bg.darker() : bg);

@@ -15,6 +15,6 @@ Aplicación gráfica en Java que permite a los estudiantes gestionar, consultar 
 - [x] Filtros de lugares por categoría
 - [x] Gestión de lugares favoritos
 - [x] Historial de transacciones de APUNAB
-- [ ] Edición de perfil de usuario
-- [ ] Notificaciones internas
-- [ ] Exportación de reportes en CSV
+- [x] Edición de perfil de usuario
+- [x] Visualización del proceso de graduación
+- [x] Exportación de reportes en CSV
