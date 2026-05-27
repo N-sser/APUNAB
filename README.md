@@ -8,9 +8,9 @@ Aplicación gráfica en Java que permite a los estudiantes gestionar, consultar 
 
 ## 10 Funcionalidades
 
-- [ ] Implementación de tema claro y oscuro manual
-- [ ] Adaptación automática del tema según el sistema operativo
-- [ ] Cambio dinámico del tema según la hora del día
+- [x] Implementación de tema claro y oscuro manual
+- [x] Adaptación automática del tema según el sistema operativo
+- [x] Encriptación de contraseñas con SHA-256
 - [x] Búsqueda de lugares por nombre
 - [x] Filtros de lugares por categoría
 - [x] Gestión de lugares favoritos

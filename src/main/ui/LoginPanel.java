@@ -1,5 +1,6 @@
 package main.ui;
 
+import main.util.ThemeManager;
 import main.data.DataManager;
 import main.model.Student;
 
@@ -10,12 +11,9 @@ import java.awt.event.*;
 
 public class LoginPanel extends JFrame {
 
+    private static final ThemeManager tm = ThemeManager.getInstance();
     // ── Paleta (misma que el dashboard) ───────────────────────────────────────
     static final Color C_ORANGE = new Color(0xFF, 0x8C, 0x00);
-    static final Color C_BG = Color.WHITE;
-    static final Color C_TEXT = new Color(0x1A, 0x1A, 0x1A);
-    static final Color C_MUTED = new Color(0x88, 0x88, 0x88);
-    static final Color C_BORDER = new Color(0xDD, 0xDD, 0xDD);
     static final Color C_ERROR = new Color(0xE7, 0x4C, 0x3C);
 
     private final JTextField fieldCode = new JTextField();
@@ -34,13 +32,13 @@ public class LoginPanel extends JFrame {
     void buildUI() {
         JPanel root = new JPanel();
         root.setLayout(new BoxLayout(root, BoxLayout.Y_AXIS));
-        root.setBackground(C_BG);
+        root.setBackground(tm.getBg());
         root.setBorder(new EmptyBorder(50, 48, 50, 48));
 
         // Titulo
         JLabel lblTitle = centered("APUNAB", new Font("Dialog", Font.BOLD, 32), C_ORANGE);
         JLabel lblSub = centered("Universidad Autonoma de Bucaramanga",
-                new Font("Dialog", Font.PLAIN, 11), C_MUTED);
+                new Font("Dialog", Font.PLAIN, 11), tm.getMuted());
 
         // Campos
         setupField(fieldCode, "Codigo de estudiante", false);
@@ -124,7 +122,7 @@ public class LoginPanel extends JFrame {
         field.setMaximumSize(new Dimension(Integer.MAX_VALUE, 44));
         field.setAlignmentX(CENTER_ALIGNMENT);
         field.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(C_BORDER, 1, true),
+                BorderFactory.createLineBorder(tm.getBorder(), 1, true),
                 new EmptyBorder(10, 14, 10, 14)));
 
         // Logica de placeholder
@@ -132,14 +130,14 @@ public class LoginPanel extends JFrame {
             JPasswordField pf = (JPasswordField) field;
             pf.setEchoChar((char) 0); // mostrar placeholder como texto plano
             pf.setText(placeholder);
-            pf.setForeground(C_MUTED);
+            pf.setForeground(tm.getMuted());
             pf.addFocusListener(new FocusAdapter() {
                 @Override
                 public void focusGained(FocusEvent e) {
                     if (new String(pf.getPassword()).equals(placeholder)) {
                         pf.setText("");
                         pf.setEchoChar('*'); // ocultar contrasena real
-                        pf.setForeground(C_TEXT);
+                        pf.setForeground(tm.getText());
                     }
                 }
 
@@ -148,19 +146,20 @@ public class LoginPanel extends JFrame {
                     if (new String(pf.getPassword()).isEmpty()) {
                         pf.setEchoChar((char) 0);
                         pf.setText(placeholder);
-                        pf.setForeground(C_MUTED);
+                        pf.setForeground(tm.getMuted());
                     }
                 }
             });
         } else {
             field.setText(placeholder);
-            field.setForeground(C_MUTED);
+            field.setForeground(tm.getMuted());
             field.addFocusListener(new FocusAdapter() {
+
                 @Override
                 public void focusGained(FocusEvent e) {
                     if (field.getText().equals(placeholder)) {
                         field.setText("");
-                        field.setForeground(C_TEXT);
+                        field.setForeground(tm.getText());
                     }
                 }
 
@@ -168,9 +167,10 @@ public class LoginPanel extends JFrame {
                 public void focusLost(FocusEvent e) {
                     if (field.getText().isEmpty()) {
                         field.setText(placeholder);
-                        field.setForeground(C_MUTED);
+                        field.setForeground(tm.getMuted());
                     }
                 }
+
             });
         }
     }
@@ -181,11 +181,11 @@ public class LoginPanel extends JFrame {
             protected void paintComponent(Graphics g) {
                 Graphics2D g2 = (Graphics2D) g.create();
                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-                Color base = primary ? C_ORANGE : C_BG;
+                Color base = primary ? C_ORANGE : tm.getBg();
                 g2.setColor(getModel().isRollover() ? base.darker() : base);
                 g2.fillRoundRect(0, 0, getWidth(), getHeight(), 10, 10);
                 if (!primary) {
-                    g2.setColor(C_BORDER);
+                    g2.setColor(tm.getBorder());
                     g2.drawRoundRect(0, 0, getWidth() - 1, getHeight() - 1, 10, 10);
                 }
                 g2.dispose();
@@ -193,7 +193,7 @@ public class LoginPanel extends JFrame {
             }
         };
         btn.setFont(new Font("Dialog", Font.BOLD, 13));
-        btn.setForeground(primary ? Color.WHITE : C_TEXT);
+        btn.setForeground(primary ? Color.WHITE : tm.getText());
         btn.setContentAreaFilled(false);
         btn.setBorderPainted(false);
         btn.setFocusPainted(false);

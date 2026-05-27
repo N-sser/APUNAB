@@ -1,5 +1,6 @@
 package main.ui;
 
+import main.util.ThemeManager;
 import main.data.DataManager;
 import main.model.Place;
 import main.model.Student;
@@ -18,6 +19,7 @@ import java.util.List;
  */
 public class PlacesPanel extends JPanel {
 
+    private static final ThemeManager tm = ThemeManager.getInstance();
     private final Student student;
     private final DataManager dm = DataManager.getInstance();
     private JPanel cardsContainer;
@@ -31,18 +33,13 @@ public class PlacesPanel extends JPanel {
 
     static final Color C_ORANGE = new Color(0xFF, 0x8C, 0x00);
     static final Color C_ORANGE_BG = new Color(0xFF, 0x8C, 0x00, 30);
-    static final Color C_BG = new Color(0xF5, 0xF5, 0xF5);
-    static final Color C_WHITE = Color.WHITE;
-    static final Color C_TEXT = new Color(0x1A, 0x1A, 0x1A);
-    static final Color C_MUTED = new Color(0x88, 0x88, 0x88);
-    static final Color C_BORDER = new Color(0xE8, 0xE8, 0xE8);
     static final Color C_GREEN = new Color(0x27, 0xAE, 0x60);
     static final Color C_GREEN_BG = new Color(0x27, 0xAE, 0x60, 30);
     static final Color C_RED = new Color(0xE7, 0x4C, 0x3C);
 
     public PlacesPanel(Student student) {
         this.student = student;
-        setBackground(C_BG);
+        setBackground(tm.getBg());
         setLayout(new BorderLayout());
         setBorder(new EmptyBorder(28, 28, 28, 28));
         buildUI();
@@ -56,11 +53,11 @@ public class PlacesPanel extends JPanel {
 
         JLabel lblTitle = new JLabel("Lugares APUNAB");
         lblTitle.setFont(new Font("Dialog", Font.BOLD, 22));
-        lblTitle.setForeground(C_TEXT);
+        lblTitle.setForeground(tm.getText());
 
         JLabel lblSub = new JLabel("Lugares donde puedes ganar o apostar APUNAB");
         lblSub.setFont(new Font("Dialog", Font.PLAIN, 13));
-        lblSub.setForeground(C_MUTED);
+        lblSub.setForeground(tm.getMuted());
 
         JPanel titleWrap = new JPanel();
         titleWrap.setLayout(new BoxLayout(titleWrap, BoxLayout.Y_AXIS));
@@ -83,18 +80,18 @@ public class PlacesPanel extends JPanel {
         searchField = new JTextField(18);
         searchField.setFont(new Font("Dialog", Font.PLAIN, 13));
         searchField.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(C_BORDER, 1, true),
+                BorderFactory.createLineBorder(tm.getBorder(), 1, true),
                 new EmptyBorder(6, 10, 6, 10)));
         searchField.setToolTipText("Buscar por nombre");
         // Placeholder
         searchField.setText("Buscar lugar...");
-        searchField.setForeground(C_MUTED);
+        searchField.setForeground(tm.getMuted());
         searchField.addFocusListener(new java.awt.event.FocusAdapter() {
             @Override
             public void focusGained(java.awt.event.FocusEvent e) {
                 if (searchField.getText().equals("Buscar lugar...")) {
                     searchField.setText("");
-                    searchField.setForeground(C_TEXT);
+                    searchField.setForeground(tm.getText());
                 }
             }
 
@@ -102,7 +99,7 @@ public class PlacesPanel extends JPanel {
             public void focusLost(java.awt.event.FocusEvent e) {
                 if (searchField.getText().isEmpty()) {
                     searchField.setText("Buscar lugar...");
-                    searchField.setForeground(C_MUTED);
+                    searchField.setForeground(tm.getMuted());
                 }
             }
         });
@@ -124,13 +121,13 @@ public class PlacesPanel extends JPanel {
         categoryFilter.setFont(new Font("Dialog", Font.PLAIN, 12));
         categoryFilter.addActionListener(e -> refreshCards());
 
-        JButton btnFav = styledButton("Favoritos", new Color(0xEE, 0xEE, 0xEE), C_MUTED);
+        JButton btnFav = styledButton("Favoritos", new Color(0xEE, 0xEE, 0xEE), tm.getMuted());
         btnFav.addActionListener(e -> {
             showFavOnly = !showFavOnly;
             if (showFavOnly) {
                 btnFav.setForeground(C_ORANGE);
             } else {
-                btnFav.setForeground(C_MUTED);
+                btnFav.setForeground(tm.getMuted());
             }
             refreshCards();
         });
@@ -209,7 +206,7 @@ public class PlacesPanel extends JPanel {
                 g2.setColor(new Color(0, 0, 0, 10));
                 g2.fillRoundRect(2, 3, getWidth() - 2, getHeight() - 2, 14, 14);
                 // Fondo
-                g2.setColor(C_WHITE);
+                g2.setColor(tm.getSurface());
                 g2.fillRoundRect(0, 0, getWidth() - 2, getHeight() - 2, 14, 14);
                 // Barra lateral segun estado
                 Color accent = enrolled ? C_GREEN : C_ORANGE;
@@ -230,15 +227,15 @@ public class PlacesPanel extends JPanel {
 
         JLabel lblName = new JLabel(place.getName());
         lblName.setFont(new Font("Dialog", Font.BOLD, 15));
-        lblName.setForeground(C_TEXT);
+        lblName.setForeground(tm.getText());
 
         JLabel lblDesc = new JLabel(place.getDescription());
         lblDesc.setFont(new Font("Dialog", Font.PLAIN, 12));
-        lblDesc.setForeground(C_MUTED);
+        lblDesc.setForeground(tm.getMuted());
 
         JLabel lblCount = new JLabel(place.getEnrollmentCount() + " estudiantes inscritos");
         lblCount.setFont(new Font("Dialog", Font.PLAIN, 11));
-        lblCount.setForeground(C_MUTED);
+        lblCount.setForeground(tm.getMuted());
 
         JLabel lblCategory = new JLabel(place.getCategory());
         lblCategory.setFont(new Font("Dialog", Font.PLAIN, 11));
@@ -259,7 +256,7 @@ public class PlacesPanel extends JPanel {
         // Estrella de favorito
         boolean isFav = dm.isFavorite(student.getCode(), place.getId());
         JButton btnStar = styledButton(isFav ? "★" : "☆", new Color(0xEE, 0xEE, 0xEE),
-                isFav ? new Color(0xFF, 0xB3, 0x00) : C_MUTED);
+                isFav ? new Color(0xFF, 0xB3, 0x00) : tm.getMuted());
         btnStar.addActionListener(e -> {
             dm.toggleFavorite(student.getCode(), place.getId());
             refreshCards();

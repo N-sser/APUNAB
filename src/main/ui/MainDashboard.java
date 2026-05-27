@@ -1,5 +1,6 @@
 package main.ui;
 
+import main.util.ThemeManager;
 import main.data.DataManager;
 import main.model.Student;
 
@@ -10,14 +11,11 @@ import java.awt.event.*;
 
 public class MainDashboard extends JFrame {
 
+    private static final ThemeManager tm = ThemeManager.getInstance();
     // ── Paleta de colores ─────────────────────────────────────────────────────
+    //
     static final Color C_ORANGE = new Color(0xFF, 0x8C, 0x00);
     static final Color C_ORANGE_BG = new Color(0xFF, 0x8C, 0x00, 30);
-    static final Color C_BG = new Color(0xF5, 0xF5, 0xF5);
-    static final Color C_WHITE = Color.WHITE;
-    static final Color C_TEXT = new Color(0x1A, 0x1A, 0x1A);
-    static final Color C_MUTED = new Color(0x88, 0x88, 0x88);
-    static final Color C_DIVIDER = new Color(0xEE, 0xEE, 0xEE);
 
     // ── Fuentes ───────────────────────────────────────────────────────────────
     static final Font F_BOLD_LG = new Font("Dialog", Font.BOLD, 22);
@@ -46,7 +44,7 @@ public class MainDashboard extends JFrame {
 
     void buildUI() {
         JPanel root = new JPanel(new BorderLayout());
-        root.setBackground(C_BG);
+        root.setBackground(tm.getBg());
         root.add(buildTopBar(), BorderLayout.NORTH);
         root.add(buildSidebar(), BorderLayout.WEST);
         root.add(buildCardHolder(), BorderLayout.CENTER);
@@ -60,11 +58,11 @@ public class MainDashboard extends JFrame {
             @Override
             protected void paintComponent(Graphics g) {
                 super.paintComponent(g);
-                g.setColor(C_DIVIDER);
+                g.setColor(tm.getDivider());
                 g.fillRect(0, getHeight() - 1, getWidth(), 1);
             }
         };
-        bar.setBackground(C_WHITE);
+        bar.setBackground(tm.getSurface());
         bar.setPreferredSize(new Dimension(0, 60));
         bar.setBorder(new EmptyBorder(0, 24, 0, 24));
 
@@ -74,7 +72,7 @@ public class MainDashboard extends JFrame {
 
         JLabel lblUnab = new JLabel("  -  Universidad Autonoma de Bucaramanga");
         lblUnab.setFont(F_PLAIN_SM);
-        lblUnab.setForeground(C_MUTED);
+        lblUnab.setForeground(tm.getMuted());
 
         JPanel left = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
         left.setOpaque(false);
@@ -86,7 +84,7 @@ public class MainDashboard extends JFrame {
 
         JLabel lblUser = new JLabel("  " + student.getName());
         lblUser.setFont(F_PLAIN_SM);
-        lblUser.setForeground(C_MUTED);
+        lblUser.setForeground(tm.getMuted());
 
         JButton btnLogout = roundedButton("Cerrar sesion", C_ORANGE_BG, C_ORANGE, F_PLAIN_SM);
         btnLogout.addActionListener(e -> logout());
@@ -105,20 +103,20 @@ public class MainDashboard extends JFrame {
             @Override
             protected void paintComponent(Graphics g) {
                 super.paintComponent(g);
-                g.setColor(C_DIVIDER);
+                g.setColor(tm.getDivider());
                 g.fillRect(getWidth() - 1, 0, 1, getHeight());
             }
         };
-        sidebar.setBackground(C_WHITE);
+        sidebar.setBackground(tm.getSurface());
         sidebar.setPreferredSize(new Dimension(230, 0));
         sidebar.setLayout(new BoxLayout(sidebar, BoxLayout.Y_AXIS));
         sidebar.setBorder(new EmptyBorder(24, 0, 24, 0));
 
         sidebar.add(buildAvatar());
         sidebar.add(Box.createVerticalStrut(6));
-        sidebar.add(centeredLabel(student.getName(), F_BOLD_MD, C_TEXT));
+        sidebar.add(centeredLabel(student.getName(), F_BOLD_MD, tm.getText()));
         sidebar.add(Box.createVerticalStrut(2));
-        sidebar.add(centeredLabel(student.getCode(), F_PLAIN_SM, C_MUTED));
+        sidebar.add(centeredLabel(student.getCode(), F_PLAIN_SM, tm.getMuted()));
         sidebar.add(Box.createVerticalStrut(2));
         sidebar.add(centeredLabel(student.getSemester(), F_PLAIN_SM, C_ORANGE));
         sidebar.add(Box.createVerticalStrut(20));
@@ -179,7 +177,7 @@ public class MainDashboard extends JFrame {
 
         JLabel lbl = new JLabel(label);
         lbl.setFont(F_PLAIN_MD);
-        lbl.setForeground(C_TEXT);
+        lbl.setForeground(tm.getText());
         item.add(lbl);
 
         item.addMouseListener(new MouseAdapter() {
@@ -209,7 +207,7 @@ public class MainDashboard extends JFrame {
     // ── Contenedor de paneles (CardLayout) ────────────────────────────────────
 
     JPanel buildCardHolder() {
-        cardHolder.setBackground(C_BG);
+        cardHolder.setBackground(tm.getBg());
 
         // Cada panel recibe el estudiante para mostrar datos reales
         cardHolder.add(buildHomePanel(), "home");
@@ -227,7 +225,7 @@ public class MainDashboard extends JFrame {
 
     JPanel buildHomePanel() {
         JPanel panel = new JPanel(new BorderLayout());
-        panel.setBackground(C_BG);
+        panel.setBackground(tm.getBg());
         panel.setBorder(new EmptyBorder(28, 28, 28, 28));
 
         // Encabezado
@@ -241,11 +239,11 @@ public class MainDashboard extends JFrame {
 
         JLabel lblHi = new JLabel("Bienvenido, " + student.getName().split(" ")[0] + "!");
         lblHi.setFont(F_BOLD_LG);
-        lblHi.setForeground(C_TEXT);
+        lblHi.setForeground(tm.getText());
 
         JLabel lblSub = new JLabel("Resumen de tu actividad APUNAB");
         lblSub.setFont(F_PLAIN_MD);
-        lblSub.setForeground(C_MUTED);
+        lblSub.setForeground(tm.getMuted());
 
         headerText.add(lblHi);
         headerText.add(Box.createVerticalStrut(4));
@@ -282,11 +280,11 @@ public class MainDashboard extends JFrame {
         actions.setBorder(new EmptyBorder(18, 0, 0, 0));
         // actions.add(roundedButton("Ver Lugares", C_ORANGE_BG, C_ORANGE, F_PLAIN_SM));
         // actions.add(roundedButton("Historial de APUNAB", new Color(0xEE, 0xEE, 0xEE),
-        // C_TEXT, F_PLAIN_SM));
+        // tm.getText(), F_PLAIN_SM));
         // actions.add(roundedButton("Estadisticas", new Color(0xEE, 0xEE, 0xEE),
-        // C_TEXT, F_PLAIN_SM));
+        // tm.getText(), F_PLAIN_SM));
         // actions.add(roundedButton("Registrarse en Lugar", new Color(0xEE, 0xEE,
-        // 0xEE), C_TEXT, F_PLAIN_SM));
+        // 0xEE), tm.getText(), F_PLAIN_SM));
 
         JPanel center = new JPanel(new BorderLayout());
         center.setOpaque(false);
@@ -301,10 +299,10 @@ public class MainDashboard extends JFrame {
     /** Panel temporal para secciones que aun no estan construidas. */
     JPanel placeholder(String name) {
         JPanel p = new JPanel(new GridBagLayout());
-        p.setBackground(C_BG);
+        p.setBackground(tm.getBg());
         JLabel lbl = new JLabel(name + " — proximamente");
         lbl.setFont(F_BOLD_MD);
-        lbl.setForeground(C_MUTED);
+        lbl.setForeground(tm.getMuted());
         p.add(lbl);
         return p;
     }
@@ -354,7 +352,7 @@ public class MainDashboard extends JFrame {
 
         JLabel t1 = new JLabel("Mis APUNAB");
         t1.setFont(F_PLAIN_SM);
-        t1.setForeground(C_MUTED);
+        t1.setForeground(tm.getMuted());
         t1.setAlignmentX(LEFT_ALIGNMENT);
 
         JLabel t2 = new JLabel(fmt(bal));
@@ -364,7 +362,7 @@ public class MainDashboard extends JFrame {
 
         JLabel t3 = new JLabel(String.format("Faltan %s  %d%%", fmt(needed), pct));
         t3.setFont(F_PLAIN_SM);
-        t3.setForeground(C_MUTED);
+        t3.setForeground(tm.getMuted());
         t3.setAlignmentX(LEFT_ALIGNMENT);
 
         chip.add(t1);
@@ -389,7 +387,7 @@ public class MainDashboard extends JFrame {
                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
                 g2.setColor(new Color(0, 0, 0, 12));
                 g2.fillRoundRect(2, 3, getWidth() - 2, getHeight() - 2, 14, 14);
-                g2.setColor(C_WHITE);
+                g2.setColor(tm.getSurface());
                 g2.fillRoundRect(0, 0, getWidth() - 2, getHeight() - 2, 14, 14);
                 g2.setColor(accent);
                 g2.fillRoundRect(0, 0, 5, getHeight() - 2, 14, 14);
@@ -403,17 +401,17 @@ public class MainDashboard extends JFrame {
 
         JLabel lTitle = new JLabel(title.toUpperCase());
         lTitle.setFont(new Font("Dialog", Font.PLAIN, 10));
-        lTitle.setForeground(C_MUTED);
+        lTitle.setForeground(tm.getMuted());
         lTitle.setAlignmentX(LEFT_ALIGNMENT);
 
         JLabel lValue = new JLabel(value);
         lValue.setFont(new Font("Dialog", Font.BOLD, 26));
-        lValue.setForeground(C_TEXT);
+        lValue.setForeground(tm.getText());
         lValue.setAlignmentX(LEFT_ALIGNMENT);
 
         JLabel lSub = new JLabel(subtitle);
         lSub.setFont(F_PLAIN_SM);
-        lSub.setForeground(C_MUTED);
+        lSub.setForeground(tm.getMuted());
         lSub.setAlignmentX(LEFT_ALIGNMENT);
 
         card.add(lTitle);
@@ -458,7 +456,7 @@ public class MainDashboard extends JFrame {
 
     JPanel divider() {
         JPanel d = new JPanel();
-        d.setBackground(C_DIVIDER);
+        d.setBackground(tm.getDivider());
         d.setMaximumSize(new Dimension(190, 1));
         d.setPreferredSize(new Dimension(190, 1));
         return d;

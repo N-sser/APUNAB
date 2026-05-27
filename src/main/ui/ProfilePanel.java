@@ -1,5 +1,6 @@
 package main.ui;
 
+import main.util.ThemeManager;
 import main.data.DataManager;
 import main.model.Student;
 
@@ -15,6 +16,7 @@ import java.awt.*;
 public class ProfilePanel extends JPanel {
 
     private final Student student;
+    private static final ThemeManager tm = ThemeManager.getInstance();
     private final DataManager dm = DataManager.getInstance();
 
     // Campos editables — referenciados desde el boton Actualizar
@@ -24,15 +26,10 @@ public class ProfilePanel extends JPanel {
     // Reutilizar paleta del dashboard
     static final Color C_ORANGE = new Color(0xFF, 0x8C, 0x00);
     static final Color C_ORANGE_BG = new Color(0xFF, 0x8C, 0x00, 30);
-    static final Color C_BG = new Color(0xF5, 0xF5, 0xF5);
-    static final Color C_WHITE = Color.WHITE;
-    static final Color C_TEXT = new Color(0x1A, 0x1A, 0x1A);
-    static final Color C_MUTED = new Color(0x88, 0x88, 0x88);
-    static final Color C_BORDER = new Color(0xE8, 0xE8, 0xE8);
 
     public ProfilePanel(Student student) {
         this.student = student;
-        setBackground(C_BG);
+        setBackground(tm.getBg());
         setLayout(new BorderLayout());
         setBorder(new EmptyBorder(28, 28, 28, 28));
         buildUI();
@@ -54,7 +51,7 @@ public class ProfilePanel extends JPanel {
 
     private void rebuild() {
         removeAll();
-        setBackground(C_BG);
+        setBackground(tm.getBg());
         setLayout(new BorderLayout());
         setBorder(new EmptyBorder(28, 28, 28, 28));
         buildUI();
@@ -70,7 +67,7 @@ public class ProfilePanel extends JPanel {
             protected void paintComponent(Graphics g) {
                 Graphics2D g2 = (Graphics2D) g.create();
                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-                g2.setColor(C_WHITE);
+                g2.setColor(tm.getSurface());
                 g2.fillRoundRect(0, 0, getWidth(), getHeight(), 16, 16);
                 g2.dispose();
             }
@@ -105,7 +102,7 @@ public class ProfilePanel extends JPanel {
 
         JLabel lblName = new JLabel(student.getName());
         lblName.setFont(new Font("Dialog", Font.BOLD, 24));
-        lblName.setForeground(C_TEXT);
+        lblName.setForeground(tm.getText());
 
         // Badge "Estudiante Activo"
         JLabel lblBadge = new JLabel("  Estudiante Activo  ") {
@@ -125,7 +122,7 @@ public class ProfilePanel extends JPanel {
 
         JLabel lblDesc = new JLabel("Bienvenido a tu perfil. Aqui puedes ver tu informacion personal y academica.");
         lblDesc.setFont(new Font("Dialog", Font.PLAIN, 13));
-        lblDesc.setForeground(C_MUTED);
+        lblDesc.setForeground(tm.getMuted());
 
         info.add(lblName);
         info.add(Box.createVerticalStrut(6));
@@ -143,7 +140,7 @@ public class ProfilePanel extends JPanel {
 
         JLabel lblBalTitle = new JLabel("Mis APUNAB");
         lblBalTitle.setFont(new Font("Dialog", Font.PLAIN, 11));
-        lblBalTitle.setForeground(C_MUTED);
+        lblBalTitle.setForeground(tm.getMuted());
         lblBalTitle.setAlignmentX(RIGHT_ALIGNMENT);
 
         JLabel lblBal = new JLabel(String.format("%,d", bal));
@@ -153,7 +150,7 @@ public class ProfilePanel extends JPanel {
 
         JLabel lblPct = new JLabel(pct + "% de 100,000");
         lblPct.setFont(new Font("Dialog", Font.PLAIN, 11));
-        lblPct.setForeground(C_MUTED);
+        lblPct.setForeground(tm.getMuted());
         lblPct.setAlignmentX(RIGHT_ALIGNMENT);
 
         rightPanel.add(lblBalTitle);
@@ -215,9 +212,9 @@ public class ProfilePanel extends JPanel {
         // Estilo del campo para que luzca como el label naranja
         field.setFont(new Font("Dialog", Font.BOLD, 14));
         field.setForeground(C_ORANGE);
-        field.setBackground(C_WHITE);
+        field.setBackground(tm.getSurface());
         field.setCaretColor(C_ORANGE);
-        field.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, C_BORDER));
+        field.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, tm.getBorder()));
         field.setMaximumSize(new Dimension(Integer.MAX_VALUE, 28));
         field.setAlignmentX(LEFT_ALIGNMENT);
 
@@ -230,7 +227,7 @@ public class ProfilePanel extends JPanel {
 
             @Override
             public void focusLost(java.awt.event.FocusEvent e) {
-                field.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, C_BORDER));
+                field.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, tm.getBorder()));
             }
         });
 
@@ -288,9 +285,9 @@ public class ProfilePanel extends JPanel {
             protected void paintComponent(Graphics g) {
                 Graphics2D g2 = (Graphics2D) g.create();
                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-                g2.setColor(C_WHITE);
+                g2.setColor(tm.getSurface());
                 g2.fillRoundRect(0, 0, getWidth(), getHeight(), 12, 12);
-                g2.setColor(C_BORDER);
+                g2.setColor(tm.getBorder());
                 g2.drawRoundRect(0, 0, getWidth() - 1, getHeight() - 1, 12, 12);
                 g2.dispose();
             }
@@ -303,7 +300,7 @@ public class ProfilePanel extends JPanel {
     private JLabel mutedLabel(String text) {
         JLabel lbl = new JLabel(text);
         lbl.setFont(new Font("Dialog", Font.PLAIN, 11));
-        lbl.setForeground(C_MUTED);
+        lbl.setForeground(tm.getMuted());
         lbl.setAlignmentX(LEFT_ALIGNMENT);
         return lbl;
     }

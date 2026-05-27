@@ -1,5 +1,6 @@
 package main.ui;
 
+import main.util.ThemeManager;
 import main.data.DataManager;
 import main.model.Bet;
 import main.model.Bet.Result;
@@ -22,16 +23,13 @@ import java.util.List;
  */
 public class BetsPanel extends JPanel {
 
+    private static final ThemeManager tm = ThemeManager.getInstance();
     private final Student student;
     private final DataManager dm = DataManager.getInstance();
     private DefaultTableModel tableModel;
     private JTable table;
 
     static final Color C_ORANGE = new Color(0xFF, 0x8C, 0x00);
-    static final Color C_BG = new Color(0xF5, 0xF5, 0xF5);
-    static final Color C_WHITE = Color.WHITE;
-    static final Color C_TEXT = new Color(0x1A, 0x1A, 0x1A);
-    static final Color C_MUTED = new Color(0x88, 0x88, 0x88);
     static final Color C_GREEN = new Color(0x27, 0xAE, 0x60);
     static final Color C_RED = new Color(0xE7, 0x4C, 0x3C);
 
@@ -42,7 +40,7 @@ public class BetsPanel extends JPanel {
 
     public BetsPanel(Student student) {
         this.student = student;
-        setBackground(C_BG);
+        setBackground(tm.getBg());
         setLayout(new BorderLayout());
         setBorder(new EmptyBorder(28, 28, 28, 28));
         buildUI();
@@ -60,12 +58,12 @@ public class BetsPanel extends JPanel {
 
         JLabel lblTitle = new JLabel("Mis APUNAB");
         lblTitle.setFont(new Font("Dialog", Font.BOLD, 22));
-        lblTitle.setForeground(C_TEXT);
+        lblTitle.setForeground(tm.getText());
 
         long balance = dm.getBalance(student.getCode());
         JLabel lblBalance = new JLabel("Balance actual: " + String.format("%,d", balance) + " APUNAB");
         lblBalance.setFont(new Font("Dialog", Font.PLAIN, 13));
-        lblBalance.setForeground(C_MUTED);
+        lblBalance.setForeground(tm.getMuted());
 
         titleWrap.add(lblTitle);
         titleWrap.add(Box.createVerticalStrut(4));
@@ -90,14 +88,14 @@ public class BetsPanel extends JPanel {
 
         JScrollPane scroll = new JScrollPane(table);
         scroll.setBorder(BorderFactory.createLineBorder(new Color(0xE8, 0xE8, 0xE8)));
-        scroll.getViewport().setBackground(C_WHITE);
+        scroll.getViewport().setBackground(tm.getSurface());
 
         // Botones de accion bajo la tabla
         JPanel actions = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
         actions.setOpaque(false);
         actions.setBorder(new EmptyBorder(12, 0, 0, 0));
 
-        JButton btnEdit = styledButton("Editar", new Color(0xEE, 0xEE, 0xEE), C_TEXT);
+        JButton btnEdit = styledButton("Editar", new Color(0xEE, 0xEE, 0xEE), tm.getText());
         btnEdit.addActionListener(e -> editSelected());
 
         JButton btnDel = styledButton("Eliminar", new Color(0xEE, 0xEE, 0xEE), C_RED);
@@ -123,10 +121,10 @@ public class BetsPanel extends JPanel {
         table.setShowGrid(false);
         table.setIntercellSpacing(new Dimension(0, 0));
         table.setSelectionBackground(new Color(0xFF, 0x8C, 0x00, 30));
-        table.setSelectionForeground(C_TEXT);
+        table.setSelectionForeground(tm.getText());
         table.getTableHeader().setFont(new Font("Dialog", Font.BOLD, 12));
-        table.getTableHeader().setBackground(C_WHITE);
-        table.getTableHeader().setForeground(C_MUTED);
+        table.getTableHeader().setBackground(tm.getSurface());
+        table.getTableHeader().setForeground(tm.getMuted());
         table.getTableHeader().setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, new Color(0xE8, 0xE8, 0xE8)));
         table.setFillsViewportHeight(true);
 
@@ -160,7 +158,7 @@ public class BetsPanel extends JPanel {
                 else if (text.startsWith("-"))
                     setForeground(C_RED);
                 else
-                    setForeground(C_TEXT);
+                    setForeground(tm.getText());
                 setFont(new Font("Dialog", Font.BOLD, 13));
                 return this;
             }
